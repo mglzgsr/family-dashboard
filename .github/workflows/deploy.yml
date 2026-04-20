@@ -8,14 +8,11 @@ jobs:
   deploy:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
+      - name: Pull latest code
+        run: git -C /opt/family-planner pull origin main
 
-      - name: Build & restart
-        run: |
-          docker compose build --no-cache
-          docker compose up -d --force-recreate
+      - name: Install dependencies
+        run: /opt/family-planner/venv/bin/pip install -r /opt/family-planner/requirements.txt
 
-      - name: Health check
-        run: |
-          sleep 5
-          curl -f http://localhost:8001/api/status
+      - name: Restart service
+        run: sudo systemctl restart family-dashboard

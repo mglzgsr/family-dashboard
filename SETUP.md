@@ -7,17 +7,21 @@ Stack: **FastAPI + Python 3.12 · SQLite · Docker · Cloudflare Zero Trust**
 ## 1. Primera puesta en marcha (local)
 
 ```bash
-cd ~/Projects/family-dashboard
+cd ~/Projects/family-plan
 
 # Copiar variables de entorno
 cp .env.example .env
 # → Edita .env con tus valores (ver secciones abajo)
 
+# Crear entorno virtual e instalar dependencias
+python3 -m venv venv
+venv/bin/pip install -r requirements.txt
+
 # Arrancar
-docker compose up -d
+venv/bin/uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 
 # Ver logs
-docker compose logs -f
+journalctl -u family-dashboard -f  # en producción
 ```
 
 Abre http://localhost:8001 en el navegador.
@@ -95,12 +99,15 @@ Recuerda actualizar `APP_URL=https://family.tudominio.com` en `.env` para que el
 
 ## 5. Despliegue con GitHub Actions
 
-El workflow en `.github/workflows/deploy.yml` usa el mismo **self-hosted runner** que el proyecto de finanzas:
+El workflow en `.github/workflows/deploy.yml` usa un **self-hosted runner** en la misma máquina que el proyecto de finanzas (hostname: `finances`, IP: `192.168.0.27`).
+
+El runner corre como usuario `family` y el código vive en `/opt/family-planner`.
 
 ```bash
-# En la raíz del repo, el runner ejecuta:
-docker compose build --no-cache
-docker compose up -d --force-recreate
+# En cada push a main, el runner ejecuta:
+git -C /opt/family-planner pull origin main
+/opt/family-planner/venv/bin/pip install -r /opt/family-planner/requirements.txt
+sudo systemctl restart family-dashboard
 ```
 
 Cada `git push` a `main` despliega automáticamente.
@@ -110,16 +117,14 @@ Cada `git push` a `main` despliega automáticamente.
 ## 6. Estructura del proyecto
 
 ```
-family-dashboard/
+family-plan/
 ├── main.py            # FastAPI: rutas, lifespan, OAuth
 ├── database.py        # SQLite: init, CRUD eventos/tareas/settings
 ├── calendar_sync.py   # Google Calendar API + Apple CalDAV
 ├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
 ├── .env               # (no committear — está en .gitignore)
 ├── .env.example
-├── data/              # SQLite DB — persistido vía Docker volume
+├── data/              # SQLite DB
 └── frontend/
     └── index.html     # SPA: familia + vistas individuales
 ```
