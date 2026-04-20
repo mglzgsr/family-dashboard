@@ -1,0 +1,21 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build & restart
+        run: |
+          docker compose build --no-cache
+          docker compose up -d --force-recreate
+
+      - name: Health check
+        run: |
+          sleep 5
+          curl -f http://localhost:8001/api/status

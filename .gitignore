@@ -1,0 +1,23 @@
+# Entorno — NUNCA committear
+.env
+
+# Base de datos SQLite
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# macOS
+.DS_Store
+
+# Docker
+*.log
+
+# Google
+client_secret*.json
