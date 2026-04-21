@@ -814,6 +814,14 @@
       flex: 1;
     }
 
+    .ev-member-picker { display:flex; gap:8px; flex-wrap:wrap; }
+    .ev-member-btn { display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 8px; border-radius:10px; border:2px solid transparent; cursor:pointer; background:var(--surface2); transition:all .15s; min-width:52px; }
+    .ev-member-btn img { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+    .ev-member-btn .ev-m-emoji { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; background:var(--border); }
+    .ev-member-btn span.ev-m-name { font-size:10px; font-weight:600; color:var(--text-muted); }
+    .ev-member-btn.selected { border-color:#7C3AED; background:rgba(124,58,237,.12); }
+    .ev-member-btn.selected span.ev-m-name { color:var(--text); }
+
     .day-pill {
       display: flex;
       align-items: center;
@@ -1195,7 +1203,8 @@
       </div>
       <div class="modal-body">
         <input id="ev-title" type="text" placeholder="Título del evento" required>
-        <select id="ev-member"></select>
+        <input type="hidden" id="ev-member" value="">
+        <div class="ev-member-picker" id="ev-member-picker"></div>
         <div class="field-group">
           <input id="ev-date" type="date" required>
           <input id="ev-start" type="time" placeholder="Inicio">
@@ -1842,13 +1851,34 @@
       loadEvents().then(render);
     }
 
+    function renderMemberPicker() {
+      const container = document.getElementById('ev-member-picker');
+      const shown = state.members.filter(m => !m.category);
+      container.innerHTML = shown.map(m => {
+        const avatar = m.image
+          ? `<img src="${m.image}" alt="${m.name}" onerror="this.outerHTML='<div class=\\'ev-m-emoji\\'>${m.emoji}</div>'">`
+          : `<div class="ev-m-emoji">${m.emoji}</div>`;
+        return `<button type="button" class="ev-member-btn" data-member="${m.id}" onclick="toggleMemberBtn('${m.id}')">${avatar}<span class="ev-m-name">${m.name}</span></button>`;
+      }).join('');
+    }
+    function toggleMemberBtn(memberId) {
+      const btn = document.querySelector(`#ev-member-picker [data-member="${memberId}"]`);
+      if (btn) btn.classList.toggle('selected');
+    }
+    function getSelectedMembers() {
+      return Array.from(document.querySelectorAll('#ev-member-picker .ev-member-btn.selected')).map(b => b.dataset.member);
+    }
+    function setDefaultMember(memberId) {
+      document.querySelectorAll('#ev-member-picker .ev-member-btn').forEach(b => b.classList.remove('selected'));
+      const btn = document.querySelector(`#ev-member-picker [data-member="${memberId}"]`);
+      if (btn) btn.classList.add('selected');
+    }
+
     // -- Add event modal --
     function openAddEvent() { openAddEventOn(fmtDate(new Date())); }
     function openAddEventOn(dateStr) {
-      // Populate member select
-      const sel = document.getElementById('ev-member');
-      sel.innerHTML = state.members.map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
-      if (state.currentMember) sel.value = state.currentMember.id;
+      renderMemberPicker();
+      setDefaultMember((state.currentMember && state.currentMember.id) || 'family');
 
       document.getElementById('ev-date').value = dateStr;
       document.getElementById('ev-title').value = '';
@@ -1915,7 +1945,8 @@
       const allDay = document.getElementById('ev-allday').checked;
       const start = document.getElementById('ev-start').value;
       const end = document.getElementById('ev-end').value;
-      const member = document.getElementById('ev-member').value;
+      const selectedMembers = getSelectedMembers();
+      const member = selectedMembers.length > 0 ? selectedMembers[0] : 'family';
       const loc = document.getElementById('ev-location').value.trim();
       const desc = document.getElementById('ev-description').value.trim();
       const recurrence = document.getElementById('ev-recurrence').value;
@@ -1930,7 +1961,10 @@
         for (const d of dates) {
           const start_dt = allDay ? d : (start ? `${d}T${start}:00` : d);
           const end_dt = allDay ? d : (end ? `${d}T${end}:00` : start_dt);
-          await api('POST', '/api/events', { title, start_dt, end_dt, all_day: allDay, member_id: member, location: loc || null, description: desc || null });
+          const res = await api('POST', '/api/events', { title, start_dt, end_dt, all_day: allDay, member_id: member, location: loc || null, description: desc || null });
+          if (selectedMembers.length > 1 && res && res.event) {
+            await api('PUT', `/api/events/${res.event.id}/assignments`, { member_ids: selectedMembers });
+          }
         }
         closeModal('modal-event');
         await loadEvents();
