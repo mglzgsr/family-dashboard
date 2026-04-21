@@ -15,6 +15,16 @@ load_dotenv()
 import database
 import calendar_sync
 
+
+def _img(name: str) -> str:
+    import hashlib
+    path = f"frontend/assets/{name}.jpg"
+    try:
+        h = hashlib.md5(open(path, "rb").read()).hexdigest()[:8]
+    except Exception:
+        h = "1"
+    return f"/static/assets/{name}.jpg?v={h}"
+
 # ── App lifespan ──────────────────────────────────────────────────────────────
 
 @asynccontextmanager
@@ -123,11 +133,11 @@ async def api_status():
         "apple_configured": apple_configured,
         "last_sync": database.get_setting("last_sync"),
         "members": [
-            {"id": "ale",      "name": "Ale",        "color": "#7C3AED", "emoji": "👩", "adult": True, "image": "/static/assets/ale.jpg", "category": False},
-            {"id": "miguel",   "name": "Miguel",     "color": "#2563EB", "emoji": "👨", "adult": True, "image": "/static/assets/miguel.jpg", "category": False},
-            {"id": "noa",      "name": "Noa",        "color": "#059669", "emoji": "🧒", "adult": False, "image": "/static/assets/noa.jpg", "category": False},
-            {"id": "oli",      "name": "Oli",        "color": "#D97706", "emoji": "👧", "adult": False, "image": "/static/assets/oli.jpg", "category": False},
-            {"id": "family",   "name": "Familia",    "color": "#DB2777", "emoji": "🏠", "adult": False, "image": "/static/assets/family.jpg", "category": False},
+            {"id": "ale",      "name": "Ale",        "color": "#7C3AED", "emoji": "👩", "adult": True, "image": _img("ale"), "category": False},
+            {"id": "miguel",   "name": "Miguel",     "color": "#2563EB", "emoji": "👨", "adult": True, "image": _img("miguel"), "category": False},
+            {"id": "noa",      "name": "Noa",        "color": "#059669", "emoji": "🧒", "adult": False, "image": _img("noa"), "category": False},
+            {"id": "oli",      "name": "Oli",        "color": "#D97706", "emoji": "👧", "adult": False, "image": _img("oli"), "category": False},
+            {"id": "family",   "name": "Familia",    "color": "#DB2777", "emoji": "🏠", "adult": False, "image": _img("family"), "category": False},
             {"id": "birthday", "name": "Cumpleaños", "color": "#B45309", "emoji": "🎂", "adult": False, "category": True},
         ],
     }
