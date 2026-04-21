@@ -123,12 +123,12 @@ async def api_status():
         "apple_configured": apple_configured,
         "last_sync": database.get_setting("last_sync"),
         "members": [
-            {"id": "ale",      "name": "Ale",        "color": "#7C3AED", "emoji": "👩", "adult": True,  "category": False},
-            {"id": "miguel",   "name": "Miguel",     "color": "#2563EB", "emoji": "👨", "adult": True,  "category": False},
-            {"id": "noa",      "name": "Noa",        "color": "#059669", "emoji": "🧒", "adult": False, "category": False},
-            {"id": "oli",      "name": "Oli",        "color": "#D97706", "emoji": "👧", "adult": False, "category": False},
-            {"id": "family",   "name": "Familia",    "color": "#DB2777", "emoji": "🏠", "adult": False, "category": False},
-            {"id": "birthday", "name": "Cumpleaños", "color": "#B45309", "emoji": "🎂", "adult": False, "category": True},
+            {"id": "ale",      "name": "Ale",        "color": "#7C3AED", "emoji": "👩", "adult": True, "image": "/static/images/ale.png", "category": False},
+            {"id": "miguel",   "name": "Miguel",     "color": "#2563EB", "emoji": "👨", "adult": True, "image": "/static/images/miguel.png", "category": False},
+            {"id": "noa",      "name": "Noa",        "color": "#059669", "emoji": "🧒", "adult": False, "image": "/static/images/noa.png", "category": False},
+            {"id": "oli",      "name": "Oli",        "color": "#D97706", "emoji": "👧", "adult": False, "image": "/static/images/oli.png", "category": False},
+            {"id": "family",   "name": "Familia",    "color": "#DB2777", "emoji": "🏠", "adult": False, "image": "/static/images/family.png", "category": False},
+            {"id": "birthday", "name": "Cumpleaños", "color": "#B45309", "emoji": "🎂", "adult": False, "image": "/static/images/birthday.png", "category": True},
         ],
     }
 
