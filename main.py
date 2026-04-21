@@ -49,9 +49,9 @@ def _seed_demo_tasks():
 
 
 async def _periodic_sync():
-    """Sync calendars every 30 minutes."""
+    interval = int(os.getenv("SYNC_INTERVAL_MINUTES", "30")) * 60
     while True:
-        await asyncio.sleep(30 * 60)
+        await asyncio.sleep(interval)
         try:
             await calendar_sync.sync_all()
         except Exception as exc:
