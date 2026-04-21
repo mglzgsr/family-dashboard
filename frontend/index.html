@@ -494,24 +494,15 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     </div>
     <div style="padding:0">
 
-      <div class="settings-section">
+      <div class="settings-section" id="settings-google-section">
         <div class="settings-section-head">
           <div class="settings-icon">G</div>
           <div class="settings-section-title">
             <strong>Google Calendar</strong>
-            <span id="settings-google-status" class="settings-status"></span>
           </div>
-          <div id="settings-google-action"></div>
+          <a href="/auth/google" class="btn btn-ghost btn-sm">+ Cuenta</a>
         </div>
-        <div id="settings-google-cals"></div>
-        <div class="settings-add-ics hidden" id="settings-google-add">
-          <select id="gcal-picker"><option>Cargando...</option></select>
-          <select id="gcal-member"></select>
-          <div class="field-group">
-            <button class="btn btn-ghost" onclick="hideAddGcal()">Cancelar</button>
-            <button class="btn btn-primary" onclick="submitAddGcal()">Añadir</button>
-          </div>
-        </div>
+        <div id="settings-google-accounts"></div>
       </div>
 
       <div class="settings-section">
@@ -565,6 +556,8 @@ let state = {
   status: {},
 };
 let icsCalendars = [];
+let googleAccounts = [];
+let savedGoogleCals = [];
 
 const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -584,7 +577,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Load status & members
   await loadStatus();
-  await fetchIcsCalendars();
+  await Promise.all([fetchIcsCalendars(), fetchGoogleAccounts()]);
   renderMemberPills();
 
   // Parse route
@@ -720,7 +713,7 @@ function renderMemberView() {
 function renderStatusBanner() {
   const el = document.getElementById('status-banner');
   const s = state.status;
-  const hasAny = s.google_connected || s.apple_configured || icsCalendars.length > 0;
+  const hasAny = googleAccounts.length > 0 || s.apple_configured || icsCalendars.length > 0;
   if (!hasAny) {
     el.innerHTML = `
       <div class="banner banner-warn">
@@ -733,7 +726,7 @@ function renderStatusBanner() {
       </div>`;
   } else {
     const parts = [];
-    if (s.google_connected) parts.push('Google ✓');
+    if (googleAccounts.length) parts.push(`Google (${googleAccounts.length})`);
     if (s.apple_configured) parts.push('Apple ✓');
     if (icsCalendars.length) parts.push(`ICS (${icsCalendars.length})`);
     const lastSync = s.last_sync ? 'Última sync: ' + fmtRelative(s.last_sync) : 'Sin sincronizar aún';
@@ -1106,34 +1099,27 @@ async function saveEventAssignment() {
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────
-let savedGoogleCals = [];
 
 async function openSettings() {
   const s = state.status;
-  const googleStatus = document.getElementById('settings-google-status');
-  const googleAction = document.getElementById('settings-google-action');
-  if (s.google_connected) {
-    googleStatus.textContent = 'Conectado';
-    googleStatus.className = 'settings-status connected';
-    googleAction.innerHTML = `<a href="/auth/google/disconnect" class="btn btn-ghost btn-sm" onclick="return confirm('¿Desconectar Google Calendar?')">Desconectar</a>`;
-  } else {
-    googleStatus.textContent = 'No conectado';
-    googleStatus.className = 'settings-status';
-    googleAction.innerHTML = `<a href="/auth/google" class="btn btn-primary btn-sm">Conectar</a>`;
-  }
   const appleStatus = document.getElementById('settings-apple-status');
   appleStatus.textContent = s.apple_configured ? 'Configurado' : 'No configurado';
   appleStatus.className = 'settings-status' + (s.apple_configured ? ' connected' : '');
 
-  const memberOpts = state.members.filter(m => !m.category)
+  document.getElementById('ics-member').innerHTML = state.members.filter(m => !m.category)
     .map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
-  document.getElementById('ics-member').innerHTML = memberOpts;
-  document.getElementById('gcal-member').innerHTML = memberOpts;
 
-  await Promise.all([fetchSavedGoogleCals(), fetchIcsCalendars()]);
-  renderSavedGoogleCals();
+  await Promise.all([fetchGoogleAccounts(), fetchSavedGoogleCals(), fetchIcsCalendars()]);
+  renderGoogleAccounts();
   renderIcsCalendars();
   document.getElementById('modal-settings').classList.remove('hidden');
+}
+
+async function fetchGoogleAccounts() {
+  try {
+    const data = await api('GET', '/api/google/accounts');
+    googleAccounts = data.accounts || [];
+  } catch {}
 }
 
 async function fetchSavedGoogleCals() {
@@ -1143,58 +1129,77 @@ async function fetchSavedGoogleCals() {
   } catch {}
 }
 
-function renderSavedGoogleCals() {
-  const container = document.getElementById('settings-google-cals');
-  if (!savedGoogleCals.length) {
-    container.innerHTML = state.status.google_connected
-      ? '<p class="settings-note">No hay calendarios seleccionados. <button class="btn btn-ghost btn-sm" style="margin-left:4px" onclick="showAddGcal()">+ Añadir</button></p>'
-      : '';
+function renderGoogleAccounts() {
+  const container = document.getElementById('settings-google-accounts');
+  if (!googleAccounts.length) {
+    container.innerHTML = '<p class="settings-note">No hay cuentas Google conectadas.</p>';
     return;
   }
-  container.innerHTML = savedGoogleCals.map(c => {
-    const m = state.members.find(x => x.id === c.member_id);
-    const tag = m ? `<span class="tag c-${m.id}" style="margin-left:6px">${m.emoji} ${m.name}</span>` : '';
+  const memberOpts = state.members.filter(m => !m.category)
+    .map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
+  container.innerHTML = googleAccounts.map(account => {
+    const accountCals = savedGoogleCals.filter(c => c.account_id === account.id);
+    const calRows = accountCals.map(c => {
+      const m = state.members.find(x => x.id === c.member_id);
+      const tag = m ? `<span class="tag c-${m.id}" style="margin-left:6px">${m.emoji} ${m.name}</span>` : '';
+      return `
+        <div class="settings-ics-item" style="padding-left:0">
+          <div class="ics-info">
+            <div class="ics-name">${escHtml(c.name)}${tag}</div>
+          </div>
+          <button class="task-del" style="opacity:1;flex-shrink:0" onclick="deleteGoogleCal('${c.id}')" title="Eliminar">✕</button>
+        </div>`;
+    }).join('');
     return `
-      <div class="settings-ics-item">
-        <div class="ics-info">
-          <div class="ics-name">${escHtml(c.name)}${tag}</div>
+      <div class="settings-ics-item" style="flex-direction:column;align-items:stretch;padding-left:44px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="flex:1;font-weight:500">${escHtml(account.email)}</span>
+          <a href="/auth/google/disconnect/${account.id}" class="btn btn-ghost btn-sm" style="color:#ef4444"
+             onclick="return confirm('¿Desconectar ${escHtml(account.email)}?')">Desconectar</a>
         </div>
-        <button class="task-del" style="opacity:1;flex-shrink:0" onclick="deleteGoogleCal('${c.id}')" title="Eliminar">✕</button>
+        ${calRows}
+        <button class="btn btn-ghost btn-sm" style="margin-top:6px;align-self:flex-start" onclick="showGcalPicker('${account.id}')">+ Añadir calendario</button>
+        <div id="gcal-add-${account.id}" class="settings-add-ics hidden">
+          <select id="gcal-picker-${account.id}"><option>Cargando...</option></select>
+          <select id="gcal-member-${account.id}">${memberOpts}</select>
+          <div class="field-group">
+            <button class="btn btn-ghost" onclick="hideGcalPicker('${account.id}')">Cancelar</button>
+            <button class="btn btn-primary" onclick="submitAddGcal('${account.id}')">Añadir</button>
+          </div>
+        </div>
       </div>`;
-  }).join('') + (state.status.google_connected
-    ? '<p class="settings-note" style="padding-top:8px"><button class="btn btn-ghost btn-sm" onclick="showAddGcal()">+ Añadir calendario</button></p>'
-    : '');
+  }).join('');
 }
 
-async function showAddGcal() {
-  const addDiv = document.getElementById('settings-google-add');
+async function showGcalPicker(accountId) {
+  const addDiv = document.getElementById(`gcal-add-${accountId}`);
   addDiv.classList.remove('hidden');
-  const picker = document.getElementById('gcal-picker');
+  const picker = document.getElementById(`gcal-picker-${accountId}`);
   picker.innerHTML = '<option>Cargando...</option>';
   try {
-    const data = await api('GET', '/api/google/calendars');
-    const existing = new Set(savedGoogleCals.map(c => c.calendar_id));
+    const data = await api('GET', `/api/google/calendars?account_id=${accountId}`);
+    const existing = new Set(savedGoogleCals.filter(c => c.account_id === accountId).map(c => c.calendar_id));
     const opts = data.calendars.filter(c => !existing.has(c.id));
     picker.innerHTML = opts.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
     if (!opts.length) picker.innerHTML = '<option>No hay más calendarios disponibles</option>';
   } catch { picker.innerHTML = '<option>Error al cargar</option>'; }
 }
 
-function hideAddGcal() {
-  document.getElementById('settings-google-add').classList.add('hidden');
+function hideGcalPicker(accountId) {
+  document.getElementById(`gcal-add-${accountId}`).classList.add('hidden');
 }
 
-async function submitAddGcal() {
-  const picker = document.getElementById('gcal-picker');
+async function submitAddGcal(accountId) {
+  const picker = document.getElementById(`gcal-picker-${accountId}`);
   const calendar_id = picker.value;
   const name = picker.options[picker.selectedIndex]?.text || calendar_id;
-  const member_id = document.getElementById('gcal-member').value;
+  const member_id = document.getElementById(`gcal-member-${accountId}`).value;
   if (!calendar_id || calendar_id === 'Cargando...' || calendar_id === 'Error al cargar') return;
   try {
-    await api('POST', '/api/google/saved-calendars', { calendar_id, name, member_id });
-    hideAddGcal();
+    await api('POST', '/api/google/saved-calendars', { calendar_id, name, member_id, account_id: accountId });
+    hideGcalPicker(accountId);
     await fetchSavedGoogleCals();
-    renderSavedGoogleCals();
+    renderGoogleAccounts();
     showToast('✅ Calendario añadido');
   } catch (e) { showToast('⚠️ Error: ' + (e.message || 'no se pudo añadir')); }
 }
@@ -1204,7 +1209,7 @@ async function deleteGoogleCal(id) {
   try {
     await api('DELETE', `/api/google/saved-calendars/${id}`);
     await fetchSavedGoogleCals();
-    renderSavedGoogleCals();
+    renderGoogleAccounts();
   } catch { showToast('⚠️ Error al eliminar'); }
 }
 

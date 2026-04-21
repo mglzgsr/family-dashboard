@@ -90,7 +90,6 @@ async def auth_google_callback(request: Request, code: str | None = None, error:
         return RedirectResponse("/?error=google_auth_failed")
     try:
         calendar_sync.google_exchange_code(code, _redirect_uri(request))
-        # Trigger an initial sync
         asyncio.create_task(calendar_sync.sync_all())
     except Exception as exc:
         print(f"[auth] Google exchange error: {exc}")
@@ -98,8 +97,16 @@ async def auth_google_callback(request: Request, code: str | None = None, error:
     return RedirectResponse("/?connected=1")
 
 
+@app.get("/auth/google/disconnect/{account_id}")
+async def auth_google_disconnect_account(account_id: str):
+    database.delete_google_account(account_id)
+    return RedirectResponse("/")
+
+
 @app.get("/auth/google/disconnect")
 async def auth_google_disconnect():
+    for account in database.get_google_accounts():
+        database.delete_google_account(account["id"])
     database.set_setting("google_token", "")
     database.set_setting("google_connected_at", "")
     return RedirectResponse("/")
@@ -109,11 +116,10 @@ async def auth_google_disconnect():
 
 @app.get("/api/status")
 async def api_status():
-    google_token = database.get_setting("google_token")
+    google_accounts = database.get_google_accounts()
     apple_configured = bool(os.getenv("APPLE_ID") and os.getenv("APPLE_APP_PASSWORD"))
     return {
-        "google_connected": bool(google_token),
-        "google_connected_at": database.get_setting("google_connected_at"),
+        "google_connected": bool(google_accounts),
         "apple_configured": apple_configured,
         "last_sync": database.get_setting("last_sync"),
         "members": [
@@ -254,16 +260,29 @@ async def api_delete_task(task_id: str):
     return {"ok": True}
 
 
+# ── API: Google Accounts ─────────────────────────────────────────────────────
+
+@app.get("/api/google/accounts")
+async def api_list_google_accounts():
+    accounts = database.get_google_accounts()
+    return {"accounts": [{"id": a["id"], "email": a["email"], "connected_at": a["connected_at"]} for a in accounts]}
+
+
 # ── API: Google Calendars (discovery + DB) ───────────────────────────────────
 
 @app.get("/api/google/calendars")
-async def api_list_google_calendars():
+async def api_list_google_calendars(account_id: str | None = None):
     from googleapiclient.discovery import build
-    creds = calendar_sync.build_google_credentials()
+    if not account_id:
+        accounts = database.get_google_accounts()
+        if not accounts:
+            raise HTTPException(401, "Google no conectado")
+        account_id = accounts[0]["id"]
+    creds = calendar_sync.build_google_credentials(account_id)
     if not creds:
-        raise HTTPException(401, "Google no conectado")
+        raise HTTPException(401, "Cuenta no encontrada")
     try:
-        creds = calendar_sync.refresh_google_token(creds)
+        creds = calendar_sync.refresh_google_token(creds, account_id)
         service = build("calendar", "v3", credentials=creds, cache_discovery=False)
         result = service.calendarList().list().execute()
         calendars = [
@@ -279,16 +298,23 @@ class GoogleCalendarSave(BaseModel):
     calendar_id: str
     name: str
     member_id: str
+    account_id: str | None = None
 
 
 @app.get("/api/google/saved-calendars")
-async def api_get_saved_google_calendars():
-    return {"calendars": database.get_google_calendars()}
+async def api_get_saved_google_calendars(account_id: str | None = None):
+    return {"calendars": database.get_google_calendars(account_id)}
 
 
 @app.post("/api/google/saved-calendars", status_code=201)
 async def api_save_google_calendar(body: GoogleCalendarSave, background_tasks: BackgroundTasks):
-    cal = {"id": str(uuid.uuid4()), "calendar_id": body.calendar_id, "name": body.name, "member_id": body.member_id}
+    cal = {
+        "id": str(uuid.uuid4()),
+        "calendar_id": body.calendar_id,
+        "name": body.name,
+        "member_id": body.member_id,
+        "account_id": body.account_id,
+    }
     database.create_google_calendar(cal)
     background_tasks.add_task(calendar_sync.sync_all)
     return {"calendar": cal}

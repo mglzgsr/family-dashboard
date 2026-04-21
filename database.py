@@ -69,6 +69,13 @@ def init_db():
                 event_id TEXT PRIMARY KEY
             );
 
+            CREATE TABLE IF NOT EXISTS google_accounts (
+                id           TEXT PRIMARY KEY,
+                email        TEXT NOT NULL DEFAULT 'Google',
+                token_json   TEXT NOT NULL,
+                connected_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+
             CREATE TABLE IF NOT EXISTS google_calendars (
                 id          TEXT PRIMARY KEY,
                 calendar_id TEXT NOT NULL,
@@ -85,6 +92,22 @@ def init_db():
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
         """)
+        try:
+            conn.execute("ALTER TABLE google_calendars ADD COLUMN account_id TEXT")
+        except Exception:
+            pass
+
+        legacy_token = conn.execute(
+            "SELECT value FROM settings WHERE key = 'google_token'"
+        ).fetchone()
+        has_accounts = conn.execute("SELECT COUNT(*) FROM google_accounts").fetchone()[0]
+        if legacy_token and legacy_token["value"] and not has_accounts:
+            import uuid as _uuid
+            new_id = str(_uuid.uuid4())
+            conn.execute(
+                "INSERT INTO google_accounts (id, email, token_json) VALUES (?, ?, ?)",
+                (new_id, "Google (migrado)", legacy_token["value"]),
+            )
 
 
 # ── Events ────────────────────────────────────────────────────────────────────
@@ -218,18 +241,52 @@ def delete_task(task_id: str):
         conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
 
 
+# ── Google Accounts ───────────────────────────────────────────────────────────
+
+def get_google_accounts() -> list[dict]:
+    with get_conn() as conn:
+        rows = conn.execute("SELECT * FROM google_accounts ORDER BY connected_at").fetchall()
+        return [dict(r) for r in rows]
+
+
+def upsert_google_account(id: str, email: str, token_json: str):
+    with get_conn() as conn:
+        conn.execute(
+            """
+            INSERT INTO google_accounts (id, email, token_json, connected_at)
+            VALUES (?, ?, ?, datetime('now'))
+            ON CONFLICT(id) DO UPDATE SET
+                email      = excluded.email,
+                token_json = excluded.token_json,
+                connected_at = excluded.connected_at
+            """,
+            (id, email, token_json),
+        )
+
+
+def delete_google_account(account_id: str):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM google_accounts WHERE id = ?", (account_id,))
+
+
 # ── Google Calendars (DB) ─────────────────────────────────────────────────────
 
-def get_google_calendars() -> list[dict]:
+def get_google_calendars(account_id: str | None = None) -> list[dict]:
     with get_conn() as conn:
-        rows = conn.execute("SELECT * FROM google_calendars ORDER BY created_at").fetchall()
+        if account_id:
+            rows = conn.execute(
+                "SELECT * FROM google_calendars WHERE account_id = ? ORDER BY created_at",
+                (account_id,),
+            ).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM google_calendars ORDER BY created_at").fetchall()
         return [dict(r) for r in rows]
 
 
 def create_google_calendar(c: dict):
     with get_conn() as conn:
         conn.execute(
-            "INSERT INTO google_calendars (id, calendar_id, name, member_id) VALUES (:id, :calendar_id, :name, :member_id)",
+            "INSERT INTO google_calendars (id, calendar_id, name, member_id, account_id) VALUES (:id, :calendar_id, :name, :member_id, :account_id)",
             c,
         )
 

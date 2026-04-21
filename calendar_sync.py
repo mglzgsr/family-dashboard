@@ -28,7 +28,10 @@ logger = logging.getLogger(__name__)
 MEMBERS = ["ale", "miguel", "noa", "oli", "family"]
 ALL_MEMBERS = MEMBERS + ["birthday"]
 
-GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
+GOOGLE_SCOPES = [
+    "https://www.googleapis.com/auth/calendar.readonly",
+    "https://www.googleapis.com/auth/userinfo.email",
+]
 
 GOOGLE_CAL_IDS: dict[str, str] = {
     m: os.getenv(f"GOOGLE_CALENDAR_{m.upper()}", "")
@@ -61,15 +64,16 @@ def _new_id() -> str:
 
 # ── Google Calendar ────────────────────────────────────────────────────────────
 
-def build_google_credentials():
-    """Load credentials from DB settings. Returns None if not configured."""
+def build_google_credentials(account_id: str):
+    """Load credentials for a given google_accounts row. Returns None if not found."""
     from google.oauth2.credentials import Credentials
 
-    token_json = database.get_setting("google_token")
-    if not token_json:
+    accounts = database.get_google_accounts()
+    account = next((a for a in accounts if a["id"] == account_id), None)
+    if not account:
         return None
 
-    info = json.loads(token_json)
+    info = json.loads(account["token_json"])
     creds = Credentials(
         token=info.get("token"),
         refresh_token=info.get("refresh_token"),
@@ -81,70 +85,78 @@ def build_google_credentials():
     return creds
 
 
-def refresh_google_token(creds):
+def refresh_google_token(creds, account_id: str | None = None):
     """Refresh token if expired and persist the updated token."""
     from google.auth.transport.requests import Request
 
     if creds.expired and creds.refresh_token:
         creds.refresh(Request())
-        database.set_setting(
-            "google_token",
-            json.dumps(
-                {
-                    "token": creds.token,
-                    "refresh_token": creds.refresh_token,
-                }
-            ),
-        )
+        token_json = json.dumps({"token": creds.token, "refresh_token": creds.refresh_token})
+        if account_id:
+            accounts = database.get_google_accounts()
+            account = next((a for a in accounts if a["id"] == account_id), None)
+            if account:
+                database.upsert_google_account(account_id, account["email"], token_json)
+        else:
+            database.set_setting("google_token", token_json)
     return creds
+
+
+def _client_config():
+    return {
+        "web": {
+            "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+            "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+        }
+    }
 
 
 def google_oauth_url(redirect_uri: str) -> str:
     from google_auth_oauthlib.flow import Flow
 
     flow = Flow.from_client_config(
-        {
-            "web": {
-                "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-                "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
-        },
+        _client_config(),
         scopes=GOOGLE_SCOPES,
         redirect_uri=redirect_uri,
     )
     auth_url, _ = flow.authorization_url(
         access_type="offline",
-        prompt="consent",
+        prompt="select_account consent",
         include_granted_scopes="true",
     )
     return auth_url
 
 
-def google_exchange_code(code: str, redirect_uri: str):
-    """Exchange auth code for tokens and persist them."""
+def google_exchange_code(code: str, redirect_uri: str) -> str:
+    """Exchange auth code for tokens, fetch user email, persist account. Returns account_id."""
+    import httpx
+    import uuid as _uuid
     from google_auth_oauthlib.flow import Flow
 
     flow = Flow.from_client_config(
-        {
-            "web": {
-                "client_id": os.getenv("GOOGLE_CLIENT_ID"),
-                "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-            }
-        },
+        _client_config(),
         scopes=GOOGLE_SCOPES,
         redirect_uri=redirect_uri,
     )
     flow.fetch_token(code=code)
     creds = flow.credentials
-    database.set_setting(
-        "google_token",
-        json.dumps({"token": creds.token, "refresh_token": creds.refresh_token}),
-    )
-    database.set_setting("google_connected_at", datetime.now().isoformat())
+
+    try:
+        resp = httpx.get(
+            "https://www.googleapis.com/oauth2/v2/userinfo",
+            headers={"Authorization": f"Bearer {creds.token}"},
+            timeout=10,
+        )
+        email = resp.json().get("email", "Google")
+    except Exception:
+        email = "Google"
+
+    account_id = str(_uuid.uuid4())
+    token_json = json.dumps({"token": creds.token, "refresh_token": creds.refresh_token})
+    database.upsert_google_account(account_id, email, token_json)
+    return account_id
 
 
 def sync_google_member(creds, member_id: str, cal_id: str, week_start: str, week_end: str):
@@ -197,26 +209,47 @@ def sync_google_member(creds, member_id: str, cal_id: str, week_start: str, week
 
 
 def sync_google(week_start: str, week_end: str) -> dict:
-    creds = build_google_credentials()
-    if not creds:
-        return {"status": "not_connected"}
+    accounts = database.get_google_accounts()
 
-    try:
-        creds = refresh_google_token(creds)
-    except Exception as exc:
-        logger.error("Token refresh failed: %s", exc)
-        return {"status": "token_error", "error": str(exc)}
-
-    total = 0
-    db_cals = database.get_google_calendars()
-    if db_cals:
-        for cal in db_cals:
-            total += sync_google_member(creds, cal["member_id"], cal["calendar_id"], week_start, week_end)
-    else:
+    if not accounts:
+        # Fallback to legacy .env-based token
+        legacy_token = database.get_setting("google_token")
+        if not legacy_token:
+            return {"status": "not_connected"}
+        from google.oauth2.credentials import Credentials
+        info = json.loads(legacy_token)
+        creds = Credentials(
+            token=info.get("token"),
+            refresh_token=info.get("refresh_token"),
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=os.getenv("GOOGLE_CLIENT_ID"),
+            client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+            scopes=GOOGLE_SCOPES,
+        )
+        try:
+            creds = refresh_google_token(creds)
+        except Exception as exc:
+            logger.error("Token refresh failed (legacy): %s", exc)
+            return {"status": "token_error", "error": str(exc)}
+        total = 0
         for member_id, cal_id in GOOGLE_CAL_IDS.items():
             if not cal_id:
                 continue
             total += sync_google_member(creds, member_id, cal_id, week_start, week_end)
+        return {"status": "ok", "events_synced": total}
+
+    total = 0
+    for account in accounts:
+        creds = build_google_credentials(account["id"])
+        if not creds:
+            continue
+        try:
+            creds = refresh_google_token(creds, account["id"])
+        except Exception as exc:
+            logger.error("Token refresh failed for account %s: %s", account["id"], exc)
+            continue
+        for cal in database.get_google_calendars(account["id"]):
+            total += sync_google_member(creds, cal["member_id"], cal["calendar_id"], week_start, week_end)
 
     return {"status": "ok", "events_synced": total}
 
