@@ -59,6 +59,12 @@ def init_db():
                 updated_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
 
+            CREATE TABLE IF NOT EXISTS event_assignments (
+                event_id  TEXT NOT NULL,
+                member_id TEXT NOT NULL,
+                PRIMARY KEY (event_id, member_id)
+            );
+
             CREATE TABLE IF NOT EXISTS ics_calendars (
                 id         TEXT PRIMARY KEY,
                 name       TEXT NOT NULL,
@@ -74,15 +80,27 @@ def init_db():
 def get_events(week_start: str, week_end: str, member_id: str | None = None) -> list[dict]:
     with get_conn() as conn:
         if member_id:
-            rows = conn.execute(
-                "SELECT * FROM events WHERE start_dt >= ? AND start_dt < ? AND member_id = ? ORDER BY start_dt",
-                (week_start, week_end, member_id),
-            ).fetchall()
+            rows = conn.execute("""
+                SELECT e.*, GROUP_CONCAT(ea.member_id) as assigned_members
+                FROM events e
+                LEFT JOIN event_assignments ea ON e.id = ea.event_id
+                WHERE e.start_dt >= ? AND e.start_dt < ?
+                AND (
+                    EXISTS (SELECT 1 FROM event_assignments WHERE event_id = e.id AND member_id = ?)
+                    OR (e.member_id = ? AND NOT EXISTS (SELECT 1 FROM event_assignments WHERE event_id = e.id))
+                )
+                GROUP BY e.id
+                ORDER BY e.start_dt
+            """, (week_start, week_end, member_id, member_id)).fetchall()
         else:
-            rows = conn.execute(
-                "SELECT * FROM events WHERE start_dt >= ? AND start_dt < ? ORDER BY start_dt",
-                (week_start, week_end),
-            ).fetchall()
+            rows = conn.execute("""
+                SELECT e.*, GROUP_CONCAT(ea.member_id) as assigned_members
+                FROM events e
+                LEFT JOIN event_assignments ea ON e.id = ea.event_id
+                WHERE e.start_dt >= ? AND e.start_dt < ?
+                GROUP BY e.id
+                ORDER BY e.start_dt
+            """, (week_start, week_end)).fetchall()
         return [dict(r) for r in rows]
 
 
@@ -114,6 +132,16 @@ def create_manual_event(e: dict):
             """,
             e,
         )
+
+
+def assign_event_members(event_id: str, member_ids: list[str]):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM event_assignments WHERE event_id = ?", (event_id,))
+        for mid in member_ids:
+            conn.execute(
+                "INSERT INTO event_assignments (event_id, member_id) VALUES (?, ?)",
+                (event_id, mid),
+            )
 
 
 def delete_event(event_id: str):

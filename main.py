@@ -188,6 +188,16 @@ async def api_delete_event(event_id: str):
     return {"ok": True}
 
 
+class EventAssign(BaseModel):
+    member_ids: list[str]
+
+
+@app.put("/api/events/{event_id}/assignments")
+async def api_assign_event(event_id: str, body: EventAssign):
+    database.assign_event_members(event_id, body.member_ids)
+    return {"ok": True}
+
+
 # ── API: Tasks ────────────────────────────────────────────────────────────────
 
 @app.get("/api/tasks")

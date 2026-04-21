@@ -336,6 +336,21 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .toast.fade { opacity: 0; }
 
+/* ── Event detail modal ─────────────────────────────────────────────────── */
+.event-detail-meta { font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px; }
+.event-detail-meta span { display: flex; align-items: center; gap: 8px; }
+.member-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; }
+.member-cb-label {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); cursor: pointer;
+  font-size: 12px; font-weight: 600; transition: all .15s;
+  user-select: none;
+}
+.member-cb-label input { display: none; }
+.member-cb-label.checked { border-color: currentColor; }
+.evt-members { display: inline-flex; gap: 1px; margin-left: 3px; font-size: 10px; }
+
 /* ── Settings modal ─────────────────────────────────────────────────────── */
 .settings-section {
   padding: 16px 20px;
@@ -440,6 +455,27 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal('modal-event')">Cancelar</button>
       <button class="btn btn-primary" onclick="submitEvent()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Event detail modal ───────────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="modal-event-detail">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="detail-title" style="font-size:14px;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></h3>
+      <button class="icon-btn" onclick="closeModal('modal-event-detail')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="event-detail-meta" id="detail-meta"></div>
+      <div>
+        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:8px">Asignar a</label>
+        <div class="member-checkboxes" id="detail-members"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-event-detail')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEventAssignment()">Guardar</button>
     </div>
   </div>
 </div>
@@ -724,8 +760,13 @@ function renderCalendar() {
     const dayEvents = state.events.filter(e => e.start_dt.slice(0,10) === dateStr);
 
     const chips = dayEvents.map(ev => {
+      const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+      const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
+      const dots = members.length > 1
+        ? `<span class="evt-members">${members.map(id => { const m = state.members.find(x => x.id === id); return m ? m.emoji : ''; }).join('')}</span>`
+        : '';
       const time = ev.all_day ? '' : `<span class="evt-time">${ev.start_dt.slice(11,16)}</span>`;
-      return `<div class="event-chip c-${ev.member_id}" title="${escHtml(ev.title)}${ev.location ? ' · '+escHtml(ev.location) : ''}">${time}${escHtml(ev.title)}</div>`;
+      return `<div class="event-chip ${colorClass}" style="cursor:pointer" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}${ev.location ? ' · '+escHtml(ev.location) : ''}">${time}${escHtml(ev.title)}${dots}</div>`;
     }).join('');
 
     return `
@@ -986,6 +1027,52 @@ function setTheme(t) {
 }
 function toggleTheme() {
   setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+// ── Event detail & assignment ─────────────────────────────────────────────────
+let _detailEventId = null;
+
+function openEventDetail(eventId) {
+  const ev = state.events.find(e => e.id === eventId);
+  if (!ev) return;
+  _detailEventId = eventId;
+
+  document.getElementById('detail-title').textContent = ev.title;
+
+  const meta = [];
+  const dateStr = ev.all_day
+    ? ev.start_dt.slice(0, 10)
+    : `${ev.start_dt.slice(0, 10)} · ${ev.start_dt.slice(11, 16)}${ev.end_dt && ev.end_dt !== ev.start_dt ? '–' + ev.end_dt.slice(11, 16) : ''}`;
+  meta.push(`<span>📅 ${dateStr}</span>`);
+  if (ev.location) meta.push(`<span>📍 ${escHtml(ev.location)}</span>`);
+  if (ev.description) meta.push(`<span>📝 ${escHtml(ev.description)}</span>`);
+  document.getElementById('detail-meta').innerHTML = meta.join('');
+
+  const current = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+  document.getElementById('detail-members').innerHTML = state.members.map(m => {
+    const checked = current.includes(m.id);
+    return `
+      <label class="member-cb-label${checked ? ' checked' : ''}" style="color:var(--${m.id})" id="cb-label-${m.id}">
+        <input type="checkbox" value="${m.id}" ${checked ? 'checked' : ''}
+          onchange="this.closest('label').classList.toggle('checked', this.checked)">
+        ${m.emoji} ${m.name}
+      </label>`;
+  }).join('');
+
+  document.getElementById('modal-event-detail').classList.remove('hidden');
+}
+
+async function saveEventAssignment() {
+  const checks = document.querySelectorAll('#detail-members input[type=checkbox]');
+  const member_ids = [...checks].filter(c => c.checked).map(c => c.value);
+  if (!member_ids.length) { showToast('⚠️ Selecciona al menos un miembro'); return; }
+  try {
+    await api('PUT', `/api/events/${_detailEventId}/assignments`, { member_ids });
+    closeModal('modal-event-detail');
+    await loadEvents();
+    render();
+    showToast('✅ Asignación guardada');
+  } catch { showToast('⚠️ Error al guardar'); }
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────
