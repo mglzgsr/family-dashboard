@@ -655,7 +655,7 @@ async function triggerSync() {
     const poll = setInterval(async () => {
       attempts++;
       await loadStatus();
-      if (state.status.last_sync !== prevSync || attempts >= 15) {
+      if (state.status.last_sync !== prevSync || attempts >= 20) {
         clearInterval(poll);
         await loadEvents();
         render();
@@ -1054,7 +1054,7 @@ function openEventDetail(eventId) {
     ? ev.start_dt.slice(0, 10)
     : `${ev.start_dt.slice(0, 10)} · ${ev.start_dt.slice(11, 16)}${ev.end_dt && ev.end_dt !== ev.start_dt ? '–' + ev.end_dt.slice(11, 16) : ''}`;
   meta.push(`<span>📅 ${dateStr}</span>`);
-  if (ev.location) meta.push(`<span>📍 ${escHtml(ev.location)}</span>`);
+  if (ev.location) meta.push(`<span>📍 <a href="https://maps.google.com/?q=${encodeURIComponent(ev.location)}" target="_blank" style="color:inherit;text-decoration:underline">${escHtml(ev.location)}</a></span>`);
   if (ev.description) meta.push(`<span>📝 ${escHtml(ev.description)}</span>`);
   document.getElementById('detail-meta').innerHTML = meta.join('');
 
@@ -1178,7 +1178,7 @@ async function submitAddIcs() {
     renderIcsCalendars();
     renderStatusBanner();
     showToast('✅ Calendario añadido');
-  } catch { showToast('⚠️ Error al añadir el calendario'); }
+  } catch (e) { showToast('⚠️ Error: ' + (e.message || 'no se pudo añadir')); }
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
