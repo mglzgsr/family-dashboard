@@ -1262,13 +1262,13 @@
           <div class="ev-member-picker" id="detail-members-edit"></div>
         </div>
       </div>
-      <div class="modal-foot" style="justify-content:space-between">
-        <button class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
-        <div id="detail-view-btns" style="display:flex;gap:10px;flex:1;margin-left:10px">
+      <div class="modal-foot">
+        <div id="detail-view-btns" style="display:flex;gap:10px;flex:1">
           <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-event-detail')">Cerrar</button>
           <button class="btn btn-primary" style="flex:1" onclick="enterDetailEditMode()">Editar</button>
         </div>
-        <div id="detail-edit-btns" style="display:none;gap:10px;flex:1;margin-left:10px">
+        <div id="detail-edit-btns" style="display:none;gap:10px;flex:1">
+          <button class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
           <button class="btn btn-ghost" style="flex:1" onclick="exitDetailEditMode()">Cancelar</button>
           <button class="btn btn-primary" style="flex:1" onclick="saveEventAssignment()">Guardar</button>
         </div>
