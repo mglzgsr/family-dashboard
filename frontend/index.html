@@ -298,6 +298,9 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
 .field-group { display: flex; gap: 10px; }
 .field-group > * { flex: 1; }
+.day-pill { display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;user-select:none; }
+.day-pill input { display:none; }
+.day-pill:has(input:checked) { background:var(--accent);color:white;border-color:var(--accent); }
 .modal input, .modal select, .modal textarea {
   width: 100%; background: var(--surface2); border: 1px solid var(--border);
   border-radius: var(--radius-sm); color: var(--text);
@@ -447,10 +450,29 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
         <input id="ev-start" type="time" placeholder="Inicio">
         <input id="ev-end" type="time" placeholder="Fin">
       </div>
-      <label>
-        <input id="ev-allday" type="checkbox" onchange="toggleAllDay()">
-        Todo el día
-      </label>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;">
+          <input id="ev-allday" type="checkbox" onchange="toggleAllDay()">
+          Todo el día
+        </label>
+        <select id="ev-recurrence" style="flex:1;" onchange="toggleRecurrence()">
+          <option value="none">Sin repetición</option>
+          <option value="daily">Cada día</option>
+          <option value="weekly">Cada semana</option>
+          <option value="monthly">Cada mes</option>
+          <option value="semestral">Cada 6 meses</option>
+          <option value="annual">Cada año</option>
+        </select>
+      </div>
+      <div id="ev-days-row" class="hidden" style="display:flex;gap:6px;flex-wrap:wrap;">
+        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="1">L</label>
+        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="2">M</label>
+        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="3">X</label>
+        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="4">J</label>
+        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="5">V</label>
+        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="6">S</label>
+        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="7">D</label>
+      </div>
       <input id="ev-location" type="text" placeholder="Lugar (opcional)">
       <textarea id="ev-description" placeholder="Notas (opcional)" rows="2"></textarea>
     </div>
@@ -913,6 +935,9 @@ function openAddEventOn(dateStr) {
   document.getElementById('ev-allday').checked = false;
   document.getElementById('ev-start').disabled = false;
   document.getElementById('ev-end').disabled = false;
+  document.getElementById('ev-recurrence').value = 'none';
+  document.getElementById('ev-days-row').classList.add('hidden');
+  document.querySelectorAll('.ev-day-check').forEach(cb => cb.checked = false);
   document.getElementById('modal-event').classList.remove('hidden');
   setTimeout(() => document.getElementById('ev-title').focus(), 50);
 }
@@ -922,26 +947,64 @@ function toggleAllDay() {
   document.getElementById('ev-start').disabled = allDay;
   document.getElementById('ev-end').disabled   = allDay;
 }
+function toggleRecurrence() {
+  const val = document.getElementById('ev-recurrence').value;
+  const row = document.getElementById('ev-days-row');
+  if (val === 'weekly') { row.classList.remove('hidden'); }
+  else { row.classList.add('hidden'); }
+}
+function generateRecurringDates(startDate, recurrence, days) {
+  const ref = new Date(startDate + 'T00:00:00');
+  const limit = new Date(ref);
+  limit.setFullYear(limit.getFullYear() + 2);
+  const dates = [];
+  const push = d => dates.push(fmtDate(d));
+  if (recurrence === 'none') { push(ref); return dates; }
+  if (recurrence === 'daily') {
+    for (let d = new Date(ref); d <= limit; d.setDate(d.getDate() + 1)) push(new Date(d));
+  } else if (recurrence === 'weekly') {
+    for (let d = new Date(ref); d <= limit; d.setDate(d.getDate() + 1)) {
+      const dow = d.getDay() === 0 ? 7 : d.getDay(); // 1=Mon…7=Sun
+      if (days.includes(dow)) push(new Date(d));
+    }
+  } else if (recurrence === 'monthly') {
+    for (let d = new Date(ref); d <= limit; d.setMonth(d.getMonth() + 1)) push(new Date(d));
+  } else if (recurrence === 'semestral') {
+    for (let d = new Date(ref); d <= limit; d.setMonth(d.getMonth() + 6)) push(new Date(d));
+  } else if (recurrence === 'annual') {
+    limit.setFullYear(limit.getFullYear() + 3);
+    for (let d = new Date(ref); d <= limit; d.setFullYear(d.getFullYear() + 1)) push(new Date(d));
+  }
+  return dates;
+}
 async function submitEvent() {
   const title = document.getElementById('ev-title').value.trim();
   if (!title) return;
-  const date    = document.getElementById('ev-date').value;
-  const allDay  = document.getElementById('ev-allday').checked;
-  const start   = document.getElementById('ev-start').value;
-  const end     = document.getElementById('ev-end').value;
-  const member  = document.getElementById('ev-member').value;
-  const loc     = document.getElementById('ev-location').value.trim();
-  const desc    = document.getElementById('ev-description').value.trim();
+  const date       = document.getElementById('ev-date').value;
+  const allDay     = document.getElementById('ev-allday').checked;
+  const start      = document.getElementById('ev-start').value;
+  const end        = document.getElementById('ev-end').value;
+  const member     = document.getElementById('ev-member').value;
+  const loc        = document.getElementById('ev-location').value.trim();
+  const desc       = document.getElementById('ev-description').value.trim();
+  const recurrence = document.getElementById('ev-recurrence').value;
+  const days       = recurrence === 'weekly'
+    ? Array.from(document.querySelectorAll('.ev-day-check:checked')).map(cb => parseInt(cb.value))
+    : [];
 
-  const start_dt = allDay ? date : (start ? `${date}T${start}:00` : date);
-  const end_dt   = allDay ? date : (end   ? `${date}T${end}:00`   : start_dt);
+  const dates = generateRecurringDates(date, recurrence, days);
+  if (!dates.length) { showToast('⚠️ Selecciona al menos un día'); return; }
 
   try {
-    await api('POST', '/api/events', { title, start_dt, end_dt, all_day: allDay, member_id: member, location: loc || null, description: desc || null });
+    for (const d of dates) {
+      const start_dt = allDay ? d : (start ? `${d}T${start}:00` : d);
+      const end_dt   = allDay ? d : (end   ? `${d}T${end}:00`   : start_dt);
+      await api('POST', '/api/events', { title, start_dt, end_dt, all_day: allDay, member_id: member, location: loc || null, description: desc || null });
+    }
     closeModal('modal-event');
     await loadEvents();
     render();
-    showToast('📅 Evento añadido');
+    showToast(dates.length > 1 ? `📅 ${dates.length} eventos añadidos` : '📅 Evento añadido');
   } catch { showToast('⚠️ Error al guardar'); }
 }
 
