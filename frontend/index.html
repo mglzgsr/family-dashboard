@@ -181,11 +181,12 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .day-col:hover .add-day-btn { opacity: 1; }
 
 /* Member colors */
-.c-ale    { color: var(--ale);    background: var(--ale-bg); }
-.c-miguel { color: var(--miguel); background: var(--miguel-bg); }
-.c-noa    { color: var(--noa);    background: var(--noa-bg); }
-.c-oli    { color: var(--oli);    background: var(--oli-bg); }
-.c-family { color: var(--family); background: var(--family-bg); }
+.c-ale      { color: var(--ale);      background: var(--ale-bg); }
+.c-miguel   { color: var(--miguel);   background: var(--miguel-bg); }
+.c-noa      { color: var(--noa);      background: var(--noa-bg); }
+.c-oli      { color: var(--oli);      background: var(--oli-bg); }
+.c-family   { color: var(--family);   background: var(--family-bg); }
+.c-birthday { color: #B45309; background: #2d1f06; border-left-color: #F59E0B !important; font-style: italic; }
 
 /* ── Task panel ─────────────────────────────────────────────────────────── */
 .tasks-card {
@@ -733,7 +734,7 @@ function renderStatusBanner() {
 function renderMemberPills() {
   const container = document.getElementById('member-pills');
   if (!container || !state.members.length) return;
-  const shown = state.members.filter(m => m.id !== 'family');
+  const shown = state.members.filter(m => !m.category && m.id !== 'family');
   container.innerHTML = shown.map(m => {
     const active = state.currentMember?.id === m.id;
     return `<button class="member-pill${active ? ' active' : ''}"
@@ -1012,7 +1013,7 @@ function formatDue(dateStr) {
   return d.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
 }
 function colorBg(memberId) {
-  const map = {ale:'var(--ale-bg)', miguel:'var(--miguel-bg)', noa:'var(--noa-bg)', oli:'var(--oli-bg)', family:'var(--family-bg)'};
+  const map = {ale:'var(--ale-bg)', miguel:'var(--miguel-bg)', noa:'var(--noa-bg)', oli:'var(--oli-bg)', family:'var(--family-bg)', birthday:'#2d1f06'};
   return map[memberId] || 'var(--surface2)';
 }
 function escHtml(str) {
@@ -1049,7 +1050,7 @@ function openEventDetail(eventId) {
   document.getElementById('detail-meta').innerHTML = meta.join('');
 
   const current = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
-  document.getElementById('detail-members').innerHTML = state.members.map(m => {
+  document.getElementById('detail-members').innerHTML = state.members.filter(m => !m.category).map(m => {
     const checked = current.includes(m.id);
     return `
       <label class="member-cb-label${checked ? ' checked' : ''}" style="color:var(--${m.id})" id="cb-label-${m.id}">

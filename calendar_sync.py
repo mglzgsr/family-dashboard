@@ -26,12 +26,13 @@ logger = logging.getLogger(__name__)
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 MEMBERS = ["ale", "miguel", "noa", "oli", "family"]
+ALL_MEMBERS = MEMBERS + ["birthday"]
 
 GOOGLE_SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 
 GOOGLE_CAL_IDS: dict[str, str] = {
     m: os.getenv(f"GOOGLE_CALENDAR_{m.upper()}", "")
-    for m in MEMBERS
+    for m in ALL_MEMBERS
 }
 
 APPLE_CALENDAR_NAMES: dict[str, list[str]] = {
