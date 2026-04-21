@@ -1812,8 +1812,8 @@
       </div>
       <form class="add-task-form hidden" id="add-task-form" onsubmit="submitTask(event)">
         <input class="add-task-input" id="task-title" placeholder="¿Qué hay que hacer?" autocomplete="off" required>
+        <div class="ev-member-picker" id="task-member-picker" style="margin:8px 0 4px"></div>
         <div class="add-task-row">
-          <select id="task-member">${state.members.filter(m => !m.category).map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('')}</select>
           <select id="task-priority">
             <option value="high">🔴 Alta</option>
             <option value="medium" selected>🟡 Media</option>
@@ -2009,19 +2009,39 @@
     }
 
     // -- Tasks --
+    function renderTaskMemberPicker() {
+      const container = document.getElementById('task-member-picker');
+      if (!container) return;
+      const shown = state.members.filter(m => !m.category);
+      container.innerHTML = shown.map(m => {
+        const img = m.image ? `<img src="${m.image}" alt="${m.name}">` : '';
+        const fallback = `<div class="ev-m-emoji" style="${m.image ? 'display:none' : ''}">${m.emoji}</div>`;
+        return `<button type="button" class="ev-member-btn" data-member="${m.id}" onclick="selectTaskMember('${m.id}')">${img}${fallback}<span class="ev-m-name">${m.name}</span></button>`;
+      }).join('');
+    }
+    function selectTaskMember(memberId) {
+      document.querySelectorAll('#task-member-picker .ev-member-btn').forEach(b => b.classList.remove('selected'));
+      const btn = document.querySelector(`#task-member-picker [data-member="${memberId}"]`);
+      if (btn) btn.classList.add('selected');
+    }
+    function getSelectedTaskMember() {
+      const btn = document.querySelector('#task-member-picker .ev-member-btn.selected');
+      return btn ? btn.dataset.member : 'family';
+    }
     function toggleAddTaskForm() {
       const form = document.getElementById('add-task-form');
       if (!form) return;
       form.classList.toggle('hidden');
       if (!form.classList.contains('hidden')) {
-        if (state.currentMember) document.getElementById('task-member').value = state.currentMember.id;
+        renderTaskMemberPicker();
+        selectTaskMember((state.currentMember && state.currentMember.id) || 'family');
         document.getElementById('task-title').focus();
       }
     }
     async function submitTask(e) {
       e.preventDefault();
       const title = document.getElementById('task-title').value.trim();
-      const member = document.getElementById('task-member').value;
+      const member = getSelectedTaskMember();
       const priority = document.getElementById('task-priority').value;
       const due_date = document.getElementById('task-due').value || null;
       if (!title) return;
