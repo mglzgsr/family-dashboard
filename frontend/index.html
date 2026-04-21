@@ -959,9 +959,9 @@ document.querySelectorAll('.day-pill').forEach(btn => {
   btn.addEventListener('click', () => {
     const on = btn.dataset.sel === '1';
     btn.dataset.sel = on ? '0' : '1';
-    btn.style.background  = on ? '' : 'var(--accent)';
+    btn.style.background  = on ? '' : '#7C3AED';
     btn.style.color       = on ? '' : '#fff';
-    btn.style.borderColor = on ? '' : 'var(--accent)';
+    btn.style.borderColor = on ? '' : '#7C3AED';
   });
 });
 function generateRecurringDates(startDate, recurrence, days) {
