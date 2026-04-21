@@ -443,5 +443,5 @@ async def sync_all(weeks_ahead: int = 3) -> dict:
         i = sync_ics(week_start, week_end)
         results.append({"week": week_start[:10], "google": g, "apple": a, "ics": i})
 
-    database.set_setting("last_sync", datetime.now().isoformat())
+    database.set_setting("last_sync", datetime.utcnow().isoformat() + "Z")
     return {"synced_weeks": results}
