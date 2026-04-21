@@ -298,9 +298,11 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
 .field-group { display: flex; gap: 10px; }
 .field-group > * { flex: 1; }
-.day-pill { display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;user-select:none; }
+.day-pill { display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;user-select:none;outline:none; }
 .day-pill input { display:none; }
 .day-pill.active { background:var(--accent);color:white;border-color:var(--accent); }
+#ev-days-row { display:none;gap:6px;flex-wrap:wrap; }
+#ev-days-row:not(.hidden) { display:flex; }
 .modal input, .modal select, .modal textarea {
   width: 100%; background: var(--surface2); border: 1px solid var(--border);
   border-radius: var(--radius-sm); color: var(--text);
@@ -464,7 +466,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
           <option value="annual">Cada año</option>
         </select>
       </div>
-      <div id="ev-days-row" class="hidden" style="display:flex;gap:6px;flex-wrap:wrap;">
+      <div id="ev-days-row" class="hidden">
         <button type="button" class="day-pill" data-day="1">L</button>
         <button type="button" class="day-pill" data-day="2">M</button>
         <button type="button" class="day-pill" data-day="3">X</button>
