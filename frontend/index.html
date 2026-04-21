@@ -300,7 +300,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .field-group > * { flex: 1; }
 .day-pill { display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;user-select:none; }
 .day-pill input { display:none; }
-.day-pill:has(input:checked) { background:var(--accent);color:white;border-color:var(--accent); }
+.day-pill.active { background:var(--accent);color:white;border-color:var(--accent); }
 .modal input, .modal select, .modal textarea {
   width: 100%; background: var(--surface2); border: 1px solid var(--border);
   border-radius: var(--radius-sm); color: var(--text);
@@ -465,13 +465,13 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
         </select>
       </div>
       <div id="ev-days-row" class="hidden" style="display:flex;gap:6px;flex-wrap:wrap;">
-        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="1">L</label>
-        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="2">M</label>
-        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="3">X</label>
-        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="4">J</label>
-        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="5">V</label>
-        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="6">S</label>
-        <label class="day-pill"><input type="checkbox" class="ev-day-check" value="7">D</label>
+        <button type="button" class="day-pill" data-day="1">L</button>
+        <button type="button" class="day-pill" data-day="2">M</button>
+        <button type="button" class="day-pill" data-day="3">X</button>
+        <button type="button" class="day-pill" data-day="4">J</button>
+        <button type="button" class="day-pill" data-day="5">V</button>
+        <button type="button" class="day-pill" data-day="6">S</button>
+        <button type="button" class="day-pill" data-day="7">D</button>
       </div>
       <input id="ev-location" type="text" placeholder="Lugar (opcional)">
       <textarea id="ev-description" placeholder="Notas (opcional)" rows="2"></textarea>
@@ -937,7 +937,7 @@ function openAddEventOn(dateStr) {
   document.getElementById('ev-end').disabled = false;
   document.getElementById('ev-recurrence').value = 'none';
   document.getElementById('ev-days-row').classList.add('hidden');
-  document.querySelectorAll('.ev-day-check').forEach(cb => cb.checked = false);
+  document.querySelectorAll('.day-pill').forEach(btn => btn.classList.remove('active'));
   document.getElementById('modal-event').classList.remove('hidden');
   setTimeout(() => document.getElementById('ev-title').focus(), 50);
 }
@@ -953,6 +953,9 @@ function toggleRecurrence() {
   if (val === 'weekly') { row.classList.remove('hidden'); }
   else { row.classList.add('hidden'); }
 }
+document.querySelectorAll('.day-pill').forEach(btn => {
+  btn.addEventListener('click', () => btn.classList.toggle('active'));
+});
 function generateRecurringDates(startDate, recurrence, days) {
   const ref = new Date(startDate + 'T00:00:00');
   const limit = new Date(ref);
@@ -989,7 +992,7 @@ async function submitEvent() {
   const desc       = document.getElementById('ev-description').value.trim();
   const recurrence = document.getElementById('ev-recurrence').value;
   const days       = recurrence === 'weekly'
-    ? Array.from(document.querySelectorAll('.ev-day-check:checked')).map(cb => parseInt(cb.value))
+    ? Array.from(document.querySelectorAll('.day-pill.active')).map(btn => parseInt(btn.dataset.day))
     : [];
 
   const dates = generateRecurringDates(date, recurrence, days);
