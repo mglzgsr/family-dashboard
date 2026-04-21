@@ -1,784 +1,1511 @@
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>Familia Izaga</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-/* ── Reset & tokens ─────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Familia Izaga</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ── Reset & tokens ─────────────────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-:root {
-  --bg:         #111113;
-  --surface:    #1c1c1f;
-  --surface2:   #242428;
-  --border:     #2e2e33;
-  --text:       #e8e8ed;
-  --text-muted: #888892;
-  --text-dim:   #55555f;
-  --shadow:     0 2px 12px rgba(0,0,0,.4);
-  --radius:     14px;
-  --radius-sm:  8px;
+    :root {
+      --bg: #111113;
+      --surface: #1c1c1f;
+      --surface2: #242428;
+      --border: #2e2e33;
+      --text: #e8e8ed;
+      --text-muted: #888892;
+      --text-dim: #55555f;
+      --shadow: 0 2px 12px rgba(0, 0, 0, .4);
+      --radius: 14px;
+      --radius-sm: 8px;
 
-  --ale:    #7C3AED; --ale-bg:    #2a1f4a;
-  --miguel: #2563EB; --miguel-bg: #1a2444;
-  --noa:    #059669; --noa-bg:    #0f3028;
-  --oli:    #D97706; --oli-bg:    #3d2a08;
-  --family: #DB2777; --family-bg: #3d1230;
-}
-[data-theme="light"] {
-  --bg:         #f4f3f0;
-  --surface:    #ffffff;
-  --surface2:   #f0eff0;
-  --border:     #e2e1e6;
-  --text:       #111113;
-  --text-muted: #666670;
-  --text-dim:   #aaaaaa;
-  --shadow:     0 2px 12px rgba(0,0,0,.08);
-  --ale-bg:    #ede9fe; --miguel-bg: #dbeafe;
-  --noa-bg:    #d1fae5; --oli-bg:    #fef3c7; --family-bg: #fce7f3;
-}
+      --ale: #7C3AED;
+      --ale-bg: #2a1f4a;
+      --miguel: #2563EB;
+      --miguel-bg: #1a2444;
+      --noa: #059669;
+      --noa-bg: #0f3028;
+      --oli: #D97706;
+      --oli-bg: #3d2a08;
+      --family: #DB2777;
+      --family-bg: #3d1230;
+    }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  min-height: 100vh;
-}
-a { color: inherit; text-decoration: none; }
-button { cursor: pointer; border: none; background: none; font: inherit; color: inherit; }
+    [data-theme="light"] {
+      --bg: #f4f3f0;
+      --surface: #ffffff;
+      --surface2: #f0eff0;
+      --border: #e2e1e6;
+      --text: #111113;
+      --text-muted: #666670;
+      --text-dim: #aaaaaa;
+      --shadow: 0 2px 12px rgba(0, 0, 0, .08);
+      --ale-bg: #ede9fe;
+      --miguel-bg: #dbeafe;
+      --noa-bg: #d1fae5;
+      --oli-bg: #fef3c7;
+      --family-bg: #fce7f3;
+    }
 
-/* ── Header ─────────────────────────────────────────────────────────────── */
-.header {
-  position: sticky; top: 0; z-index: 100;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  height: 60px;
-  display: flex; align-items: center; gap: 16px;
-}
-.header-logo {
-  display: flex; align-items: center; gap: 10px;
-  font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700;
-  white-space: nowrap;
-}
-.header-logo .logo-icon {
-  width: 34px; height: 34px; border-radius: 10px;
-  background: linear-gradient(135deg, #7C3AED, #DB2777);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 17px;
-}
-.header-sep { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
-.header-members { display: flex; align-items: center; gap: 6px; }
-.member-pill {
-  display: flex; align-items: center; gap: 6px;
-  padding: 5px 10px; border-radius: 999px;
-  font-size: 12px; font-weight: 600;
-  background: var(--surface2); border: 1.5px solid transparent;
-  transition: all .15s; cursor: pointer;
-}
-.member-pill:hover { border-color: var(--border); }
-.member-pill.active { border-color: currentColor; }
-.member-pill .emoji { font-size: 14px; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
 
-.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 14px; border-radius: var(--radius-sm);
-  font-size: 13px; font-weight: 600; transition: all .15s;
-}
-.btn-primary { background: #7C3AED; color: #fff; }
-.btn-primary:hover { background: #6d28d9; }
-.btn-ghost {
-  background: var(--surface2); color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-.btn-ghost:hover { color: var(--text); background: var(--border); }
-.btn-sm { padding: 5px 10px; font-size: 12px; }
-.icon-btn {
-  width: 34px; height: 34px; border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: center;
-  background: var(--surface2); border: 1px solid var(--border);
-  color: var(--text-muted); transition: all .15s;
-}
-.icon-btn:hover { color: var(--text); background: var(--border); }
-.spinning { animation: spin .8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
-/* ── Banner ─────────────────────────────────────────────────────────────── */
-.banner {
-  margin: 16px 24px 0;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-  display: flex; align-items: center; gap: 12px;
-  font-size: 13px;
-}
-.banner-warn  { background: #2d2208; border: 1px solid #6b4c10; color: #f0b429; }
-.banner-ok    { background: #0f2d1f; border: 1px solid #145232; color: #34d399; }
-.banner-info  { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); }
-.banner .b-msg { flex: 1; }
-.banner .b-msg strong { display: block; font-weight: 600; }
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+      font: inherit;
+      color: inherit;
+    }
 
-/* ── Main layout ─────────────────────────────────────────────────────────── */
-.main { display: grid; grid-template-columns: 1fr 320px; gap: 16px; padding: 16px 24px 32px; }
-@media (max-width: 1100px) { .main { grid-template-columns: 1fr; } }
-@media (max-width: 1100px) { .calendar-card { overflow-x: auto; -webkit-overflow-scrolling: touch; } .week-grid { min-width: 620px; } }
+    /* ── Header ─────────────────────────────────────────────────────────────── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .header { padding: 0 12px; gap: 8px; }
-  .header-sep { display: none; }
-  .header-members { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; flex-shrink: 1; min-width: 0; }
-  .header-members::-webkit-scrollbar { display: none; }
-  .header-logo span { display: none; }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
 
-  .banner { margin: 10px 12px 0; font-size: 12px; }
+    .header-logo .logo-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #7C3AED, #DB2777);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+    }
 
-  .main { padding: 10px 12px 24px; gap: 10px; }
+    .header-sep {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
 
-  .calendar-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .week-grid { min-width: 560px; }
-  .day-col { min-height: 120px; }
-  .day-num { font-size: 15px; }
+    .header-members {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-  .modal-overlay { padding: 12px; }
-  .modal { width: 100%; max-width: 100%; }
-}
+    .member-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--surface2);
+      border: 1.5px solid transparent;
+      transition: all .15s;
+      cursor: pointer;
+    }
 
-/* ── Week calendar ──────────────────────────────────────────────────────── */
-.calendar-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.cal-header {
-  display: flex; align-items: center; gap: 10px;
-  padding: 14px 18px; border-bottom: 1px solid var(--border);
-}
-.cal-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; flex: 1; }
-.cal-nav { display: flex; align-items: center; gap: 4px; }
+    .member-pill:hover {
+      border-color: var(--border);
+    }
 
-.week-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  border-top: 1px solid var(--border);
-}
-.day-col { border-right: 1px solid var(--border); min-height: 200px; }
-.day-col:last-child { border-right: none; }
+    .member-pill.active {
+      border-color: currentColor;
+    }
 
-.day-head {
-  padding: 10px 6px 8px;
-  text-align: center;
-  border-bottom: 1px solid var(--border);
-}
-.day-name { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
-.day-num  { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; margin-top: 2px; }
-.day-col.today .day-head { background: rgba(124,58,237,.12); }
-.day-col.today .day-num  { color: #7C3AED; }
-.day-col.past  { opacity: .65; }
+    .member-pill .emoji {
+      font-size: 14px;
+    }
 
-.day-events { padding: 6px 4px; display: flex; flex-direction: column; gap: 3px; }
-.event-chip {
-  padding: 3px 6px; border-radius: 5px;
-  font-size: 11.5px; font-weight: 500; line-height: 1.4;
-  border-left: 3px solid currentColor;
-  cursor: default; overflow: hidden;
-  white-space: nowrap; text-overflow: ellipsis;
-  transition: opacity .1s;
-}
-.event-chip:hover { opacity: .85; }
-.event-chip .evt-time { opacity: .65; margin-right: 3px; font-family: 'DM Mono', monospace; font-size: 10px; }
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-.add-day-btn {
-  width: 100%; padding: 6px; text-align: center;
-  font-size: 18px; color: var(--text-dim);
-  opacity: 0; transition: opacity .15s;
-}
-.day-col:hover .add-day-btn { opacity: 1; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      transition: all .15s;
+    }
 
-/* Member colors */
-.c-ale      { color: var(--ale);      background: var(--ale-bg); }
-.c-miguel   { color: var(--miguel);   background: var(--miguel-bg); }
-.c-noa      { color: var(--noa);      background: var(--noa-bg); }
-.c-oli      { color: var(--oli);      background: var(--oli-bg); }
-.c-family   { color: var(--family);   background: var(--family-bg); }
-.c-birthday { color: #FBBF24; background: #1c1500; border-left-color: #FBBF24 !important; font-style: italic; }
-[data-theme="light"] .c-birthday { color: #92400E; background: #FEF3C7; border-left-color: #F59E0B !important; }
+    .btn-primary {
+      background: #7C3AED;
+      color: #fff;
+    }
 
-/* ── Task panel ─────────────────────────────────────────────────────────── */
-.tasks-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  display: flex; flex-direction: column;
-  max-height: 600px;
-}
-.tasks-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 14px 18px; border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.tasks-head h2 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; flex: 1; }
-.badge {
-  background: var(--surface2); color: var(--text-muted);
-  font-size: 11px; font-weight: 600; border-radius: 999px;
-  padding: 2px 7px;
-}
-.tasks-list { flex: 1; overflow-y: auto; }
-.task-row {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 18px; border-bottom: 1px solid var(--border);
-  transition: background .1s;
-}
-.task-row:hover { background: var(--surface2); }
-.task-row:last-child { border-bottom: none; }
-.task-row.done { opacity: .45; }
-.task-check {
-  width: 18px; height: 18px; border-radius: 50%;
-  border: 2px solid var(--border); flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  margin-top: 1px; transition: all .15s; cursor: pointer;
-}
-.task-check.checked { border-color: transparent; }
-.task-check .check-icon { display: none; font-size: 10px; color: #fff; font-weight: 800; }
-.task-check.checked .check-icon { display: block; }
-.task-body { flex: 1; min-width: 0; }
-.task-title { font-size: 13px; line-height: 1.4; }
-.task-row.done .task-title { text-decoration: line-through; }
-.task-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
-.tag {
-  font-size: 11px; font-weight: 600; border-radius: 5px;
-  padding: 1px 6px;
-}
-.task-due { font-size: 11px; color: var(--text-muted); }
-.task-due.overdue { color: #ef4444; font-weight: 600; }
-.task-priority { font-size: 11px; }
-.task-del {
-  width: 26px; height: 26px; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; transition: all .1s; color: var(--text-dim);
-  flex-shrink: 0;
-}
-.task-del:hover { background: #3f1212; color: #ef4444; }
-.task-row:hover .task-del { opacity: 1; }
+    .btn-primary:hover {
+      background: #6d28d9;
+    }
 
-/* Add task form */
-.add-task-form {
-  padding: 12px 18px; border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.add-task-form.hidden { display: none; }
-.add-task-input {
-  width: 100%; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text);
-  padding: 8px 12px; font: inherit; font-size: 13px;
-  outline: none; transition: border-color .15s;
-}
-.add-task-input:focus { border-color: #7C3AED; }
-.add-task-row { display: flex; gap: 6px; margin-top: 8px; }
-.add-task-row select, .add-task-row input[type=date] {
-  flex: 1; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text);
-  padding: 6px 8px; font: inherit; font-size: 12px; outline: none;
-}
-.add-task-row select:focus, .add-task-row input[type=date]:focus { border-color: #7C3AED; }
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
 
-/* ── Empty states ────────────────────────────────────────────────────────── */
-.empty {
-  padding: 32px 16px; text-align: center; color: var(--text-dim);
-}
-.empty .empty-icon { font-size: 28px; margin-bottom: 8px; }
-.empty p { font-size: 13px; }
+    .btn-ghost:hover {
+      color: var(--text);
+      background: var(--border);
+    }
 
-/* ── Modal ───────────────────────────────────────────────────────────────── */
-.modal-overlay {
-  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 200;
-  background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px;
-  animation: fadeIn .15s;
-}
-.modal-overlay.hidden { display: none; }
-@keyframes fadeIn { from { opacity: 0; } }
-.modal {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); width: 100%; max-width: 440px;
-  max-height: calc(100dvh - 32px); overflow-y: auto;
-  animation: slideUp .2s;
-}
-@keyframes slideUp { from { transform: translateY(8px); opacity: 0; } }
-.modal-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px; border-bottom: 1px solid var(--border);
-}
-.modal-head h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
-.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-.field-group { display: flex; gap: 10px; }
-.field-group > * { flex: 1; }
-.day-pill { display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:13px;font-weight:600;user-select:none;outline:none; }
-.day-pill input { display:none; }
-.day-pill.active { background:var(--accent);color:white;border-color:var(--accent); }
-#ev-days-row { display:none;gap:6px;flex-wrap:wrap; }
-#ev-days-row:not(.hidden) { display:flex; }
-.modal input, .modal select, .modal textarea {
-  width: 100%; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text);
-  padding: 9px 12px; font: inherit; font-size: 13px; outline: none;
-  transition: border-color .15s;
-}
-.modal input:focus, .modal select:focus, .modal textarea:focus { border-color: #7C3AED; }
-.modal textarea { resize: vertical; min-height: 60px; }
-.modal label { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-.modal-foot {
-  display: flex; gap: 10px;
-  padding: 0 20px 20px;
-}
-.modal-foot > * { flex: 1; }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
 
-/* ── Member view hero ────────────────────────────────────────────────────── */
-.member-hero {
-  display: flex; align-items: center; gap: 16px;
-  padding: 20px 24px 0;
-}
-.member-avatar {
-  width: 56px; height: 56px; border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28px; flex-shrink: 0;
-}
-.member-hero h1 { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
-.member-hero p  { color: var(--text-muted); font-size: 13px; }
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      transition: all .15s;
+    }
 
-/* ── Toast ───────────────────────────────────────────────────────────────── */
-.toast {
-  position: fixed; bottom: 24px; right: 24px; z-index: 300;
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 10px 16px;
-  font-size: 13px; font-weight: 500;
-  box-shadow: var(--shadow);
-  animation: slideUp .2s;
-  transition: opacity .3s;
-}
-.toast.fade { opacity: 0; }
+    .icon-btn:hover {
+      color: var(--text);
+      background: var(--border);
+    }
 
-/* ── Event detail modal ─────────────────────────────────────────────────── */
-.event-detail-meta { font-size: 13px; color: var(--text-muted); display: flex; flex-direction: column; gap: 6px; }
-.event-detail-meta span { display: flex; align-items: center; gap: 8px; }
-.member-checkboxes { display: flex; flex-wrap: wrap; gap: 8px; }
-.member-cb-label {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 10px; border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border); cursor: pointer;
-  font-size: 12px; font-weight: 600; transition: all .15s;
-  user-select: none;
-}
-.member-cb-label input { display: none; }
-.member-cb-label.checked { border-color: currentColor; }
-.evt-members { display: inline-flex; gap: 1px; margin-left: 3px; font-size: 10px; }
+    .spinning {
+      animation: spin .8s linear infinite;
+    }
 
-/* ── Settings modal ─────────────────────────────────────────────────────── */
-.settings-section {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.settings-section:last-child { border-bottom: none; }
-.settings-section-head {
-  display: flex; align-items: center; gap: 12px;
-}
-.settings-icon {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: var(--surface2); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 15px; flex-shrink: 0;
-}
-.settings-section-title { flex: 1; }
-.settings-section-title strong { display: block; font-size: 13px; font-weight: 600; }
-.settings-status { font-size: 12px; color: var(--text-muted); }
-.settings-status.connected { color: #34d399; }
-.settings-note { font-size: 12px; color: var(--text-dim); margin-top: 8px; padding-left: 44px; }
-.settings-ics-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 0 0 44px; font-size: 13px;
-}
-.settings-ics-item .ics-info { flex: 1; min-width: 0; }
-.settings-ics-item .ics-name { font-weight: 500; }
-.settings-ics-item .ics-url { font-size: 11px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.settings-add-ics {
-  padding: 12px 0 0 44px;
-  display: flex; flex-direction: column; gap: 8px;
-}
-.settings-add-ics.hidden { display: none; }
-.settings-add-ics input, .settings-add-ics select {
-  width: 100%; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); color: var(--text);
-  padding: 8px 10px; font: inherit; font-size: 13px; outline: none;
-  transition: border-color .15s;
-}
-.settings-add-ics input:focus, .settings-add-ics select:focus { border-color: #7C3AED; }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
-/* ── View switcher ───────────────────────────────────────────────────────── */
-.view-switcher { display:flex; gap:2px; background:var(--surface2); border-radius:6px; padding:2px; }
-.view-switcher button { padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600; color:var(--text-muted); background:none; border:none; cursor:pointer; }
-.view-switcher button.active { background:var(--surface); color:var(--text); }
+    /* ── Banner ─────────────────────────────────────────────────────────────── */
+    .banner {
+      margin: 16px 24px 0;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+    }
 
-/* ── Scrollbar ───────────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-</style>
+    .banner-warn {
+      background: #2d2208;
+      border: 1px solid #6b4c10;
+      color: #f0b429;
+    }
+
+    .banner-ok {
+      background: #0f2d1f;
+      border: 1px solid #145232;
+      color: #34d399;
+    }
+
+    .banner-info {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .banner .b-msg {
+      flex: 1;
+    }
+
+    .banner .b-msg strong {
+      display: block;
+      font-weight: 600;
+    }
+
+    /* ── Main layout ─────────────────────────────────────────────────────────── */
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      padding: 16px 24px 32px;
+    }
+
+    @media (max-width: 1100px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .calendar-card {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .week-grid {
+        min-width: 620px;
+      }
+    }
+
+    /* ── Responsive ─────────────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .header {
+        padding: 0 12px;
+        gap: 8px;
+      }
+
+      .header-sep {
+        display: none;
+      }
+
+      .header-members {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        flex-shrink: 1;
+        min-width: 0;
+      }
+
+      .header-members::-webkit-scrollbar {
+        display: none;
+      }
+
+      .header-logo span {
+        display: none;
+      }
+
+      .banner {
+        margin: 10px 12px 0;
+        font-size: 12px;
+      }
+
+      .main {
+        padding: 10px 12px 24px;
+        gap: 10px;
+      }
+
+      .calendar-card {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .week-grid {
+        min-width: 560px;
+      }
+
+      .day-col {
+        min-height: 120px;
+      }
+
+      .day-num {
+        font-size: 15px;
+      }
+
+      .modal-overlay {
+        padding: 12px;
+      }
+
+      .modal {
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+
+    /* ── Week calendar ──────────────────────────────────────────────────────── */
+    .calendar-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .cal-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .week-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      border-top: 1px solid var(--border);
+    }
+
+    .day-col {
+      border-right: 1px solid var(--border);
+      min-height: 200px;
+    }
+
+    .day-col:last-child {
+      border-right: none;
+    }
+
+    .day-head {
+      padding: 10px 6px 8px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .day-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .day-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 18px;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .day-col.today .day-head {
+      background: rgba(124, 58, 237, .12);
+    }
+
+    .day-col.today .day-num {
+      color: #7C3AED;
+    }
+
+    .day-col.past {
+      opacity: .65;
+    }
+
+    .day-events {
+      padding: 6px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .event-chip {
+      padding: 3px 6px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      line-height: 1.4;
+      border-left: 3px solid currentColor;
+      cursor: default;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      transition: opacity .1s;
+    }
+
+    .event-chip:hover {
+      opacity: .85;
+    }
+
+    .event-chip .evt-time {
+      opacity: .65;
+      margin-right: 3px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+    }
+
+    .add-day-btn {
+      width: 100%;
+      padding: 6px;
+      text-align: center;
+      font-size: 18px;
+      color: var(--text-dim);
+      opacity: 0;
+      transition: opacity .15s;
+    }
+
+    .day-col:hover .add-day-btn {
+      opacity: 1;
+    }
+
+    /* Member colors */
+    .c-ale {
+      color: var(--ale);
+      background: var(--ale-bg);
+    }
+
+    .c-miguel {
+      color: var(--miguel);
+      background: var(--miguel-bg);
+    }
+
+    .c-noa {
+      color: var(--noa);
+      background: var(--noa-bg);
+    }
+
+    .c-oli {
+      color: var(--oli);
+      background: var(--oli-bg);
+    }
+
+    .c-family {
+      color: var(--family);
+      background: var(--family-bg);
+    }
+
+    .c-birthday {
+      color: #FBBF24;
+      background: #1c1500;
+      border-left-color: #FBBF24 !important;
+      font-style: italic;
+    }
+
+    [data-theme="light"] .c-birthday {
+      color: #92400E;
+      background: #FEF3C7;
+      border-left-color: #F59E0B !important;
+    }
+
+    /* ── Task panel ─────────────────────────────────────────────────────────── */
+    .tasks-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      max-height: 600px;
+    }
+
+    .tasks-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .tasks-head h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .badge {
+      background: var(--surface2);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 2px 7px;
+    }
+
+    .tasks-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .task-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+      transition: background .1s;
+    }
+
+    .task-row:hover {
+      background: var(--surface2);
+    }
+
+    .task-row:last-child {
+      border-bottom: none;
+    }
+
+    .task-row.done {
+      opacity: .45;
+    }
+
+    .task-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+      transition: all .15s;
+      cursor: pointer;
+    }
+
+    .task-check.checked {
+      border-color: transparent;
+    }
+
+    .task-check .check-icon {
+      display: none;
+      font-size: 10px;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .task-check.checked .check-icon {
+      display: block;
+    }
+
+    .task-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-title {
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .task-row.done .task-title {
+      text-decoration: line-through;
+    }
+
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 3px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 5px;
+      padding: 1px 6px;
+    }
+
+    .task-due {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .task-due.overdue {
+      color: #ef4444;
+      font-weight: 600;
+    }
+
+    .task-priority {
+      font-size: 11px;
+    }
+
+    .task-del {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all .1s;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .task-del:hover {
+      background: #3f1212;
+      color: #ef4444;
+    }
+
+    .task-row:hover .task-del {
+      opacity: 1;
+    }
+
+    /* Add task form */
+    .add-task-form {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .add-task-form.hidden {
+      display: none;
+    }
+
+    .add-task-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .add-task-input:focus {
+      border-color: #7C3AED;
+    }
+
+    .add-task-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .add-task-row select,
+    .add-task-row input[type=date] {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 6px 8px;
+      font: inherit;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .add-task-row select:focus,
+    .add-task-row input[type=date]:focus {
+      border-color: #7C3AED;
+    }
+
+    /* ── Empty states ────────────────────────────────────────────────────────── */
+    .empty {
+      padding: 32px 16px;
+      text-align: center;
+      color: var(--text-dim);
+    }
+
+    .empty .empty-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .empty p {
+      font-size: 13px;
+    }
+
+    /* ── Modal ───────────────────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, .6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: fadeIn .15s;
+    }
+
+    .modal-overlay.hidden {
+      display: none;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 440px;
+      max-height: calc(100dvh - 32px);
+      overflow-y: auto;
+      animation: slideUp .2s;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(8px);
+        opacity: 0;
+      }
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-head h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .field-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .field-group>* {
+      flex: 1;
+    }
+
+    .day-pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      user-select: none;
+      outline: none;
+    }
+
+    .day-pill input {
+      display: none;
+    }
+
+    .day-pill.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    #ev-days-row {
+      display: none;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    #ev-days-row:not(.hidden) {
+      display: flex;
+    }
+
+    .modal input,
+    .modal select,
+    .modal textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .modal input:focus,
+    .modal select:focus,
+    .modal textarea:focus {
+      border-color: #7C3AED;
+    }
+
+    .modal textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .modal label {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-foot {
+      display: flex;
+      gap: 10px;
+      padding: 0 20px 20px;
+    }
+
+    .modal-foot>* {
+      flex: 1;
+    }
+
+    /* ── Member view hero ────────────────────────────────────────────────────── */
+    .member-hero {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px 0;
+    }
+
+    .member-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .member-hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .member-hero p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ── Toast ───────────────────────────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 300;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow);
+      animation: slideUp .2s;
+      transition: opacity .3s;
+    }
+
+    .toast.fade {
+      opacity: 0;
+    }
+
+    /* ── Event detail modal ─────────────────────────────────────────────────── */
+    .event-detail-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .event-detail-meta span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .member-checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .member-cb-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all .15s;
+      user-select: none;
+    }
+
+    .member-cb-label input {
+      display: none;
+    }
+
+    .member-cb-label.checked {
+      border-color: currentColor;
+    }
+
+    .evt-members {
+      display: inline-flex;
+      gap: 1px;
+      margin-left: 3px;
+      font-size: 10px;
+    }
+
+    /* ── Settings modal ─────────────────────────────────────────────────────── */
+    .settings-section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-section:last-child {
+      border-bottom: none;
+    }
+
+    .settings-section-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .settings-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .settings-section-title {
+      flex: 1;
+    }
+
+    .settings-section-title strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .settings-status {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .settings-status.connected {
+      color: #34d399;
+    }
+
+    .settings-note {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 8px;
+      padding-left: 44px;
+    }
+
+    .settings-ics-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0 0 44px;
+      font-size: 13px;
+    }
+
+    .settings-ics-item .ics-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .settings-ics-item .ics-name {
+      font-weight: 500;
+    }
+
+    .settings-ics-item .ics-url {
+      font-size: 11px;
+      color: var(--text-dim);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .settings-add-ics {
+      padding: 12px 0 0 44px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .settings-add-ics.hidden {
+      display: none;
+    }
+
+    .settings-add-ics input,
+    .settings-add-ics select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .settings-add-ics input:focus,
+    .settings-add-ics select:focus {
+      border-color: #7C3AED;
+    }
+
+    /* ── View switcher ───────────────────────────────────────────────────────── */
+    .view-switcher {
+      display: flex;
+      gap: 2px;
+      background: var(--surface2);
+      border-radius: 6px;
+      padding: 2px;
+    }
+
+    .view-switcher button {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .view-switcher button.active {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    /* ── Scrollbar ───────────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- ── Header ──────────────────────────────────────────────────────────────── -->
-<header class="header">
-  <a href="#/" class="header-logo" onclick="navigate('/')">
-    <div class="logo-icon">🏠</div>
-    Familia Izaga
-  </a>
-  <div class="header-sep"></div>
-  <nav class="header-members" id="member-pills">
-    <!-- rendered by JS -->
-  </nav>
-  <div class="header-right">
-    <button class="icon-btn" onclick="openSettings()" title="Ajustes de calendarios">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-      </svg>
-    </button>
-    <button class="icon-btn" id="sync-btn" onclick="triggerSync()" title="Sincronizar calendarios">
-      <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
-        <path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
-      </svg>
-    </button>
-    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
-    <button class="btn btn-primary btn-sm" onclick="openAddEvent()">+ Evento</button>
-  </nav>
-</header>
+  <!-- ── Header ──────────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <a href="#/" class="header-logo" onclick="navigate('/')">
+      <div class="logo-icon">🏠</div>
+      Familia Izaga
+    </a>
+    <div class="header-sep"></div>
+    <nav class="header-members" id="member-pills">
+      <!-- rendered by JS -->
+    </nav>
+    <div class="header-right">
+      <button class="icon-btn" onclick="openSettings()" title="Ajustes de calendarios">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+      </button>
+      <button class="icon-btn" id="sync-btn" onclick="triggerSync()" title="Sincronizar calendarios">
+        <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 2v6h-6" />
+          <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+          <path d="M3 22v-6h6" />
+          <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+        </svg>
+      </button>
+      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddEvent()">+ Evento</button>
+      </nav>
+  </header>
 
-<!-- ── App root ─────────────────────────────────────────────────────────────── -->
-<div id="status-banner"></div>
-<div id="app"></div>
+  <!-- ── App root ─────────────────────────────────────────────────────────────── -->
+  <div id="status-banner"></div>
+  <div id="app"></div>
 
-<!-- ── Add event modal ──────────────────────────────────────────────────────── -->
-<div class="modal-overlay hidden" id="modal-event">
-  <div class="modal">
-    <div class="modal-head">
-      <h3>Nuevo evento</h3>
-      <button class="icon-btn" onclick="closeModal('modal-event')">✕</button>
-    </div>
-    <div class="modal-body">
-      <input id="ev-title" type="text" placeholder="Título del evento" required>
-      <select id="ev-member"></select>
-      <div class="field-group">
-        <input id="ev-date" type="date" required>
-        <input id="ev-start" type="time" placeholder="Inicio">
-        <input id="ev-end" type="time" placeholder="Fin">
+  <!-- ── Add event modal ──────────────────────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="modal-event">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>Nuevo evento</h3>
+        <button class="icon-btn" onclick="closeModal('modal-event')">✕</button>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;">
-          <input id="ev-allday" type="checkbox" onchange="toggleAllDay()">
-          Todo el día
-        </label>
-        <select id="ev-recurrence" style="flex:1;" onchange="toggleRecurrence()">
-          <option value="none">Sin repetición</option>
-          <option value="daily">Cada día</option>
-          <option value="weekly">Cada semana</option>
-          <option value="monthly">Cada mes</option>
-          <option value="semestral">Cada 6 meses</option>
-          <option value="annual">Cada año</option>
-        </select>
+      <div class="modal-body">
+        <input id="ev-title" type="text" placeholder="Título del evento" required>
+        <select id="ev-member"></select>
+        <div class="field-group">
+          <input id="ev-date" type="date" required>
+          <input id="ev-start" type="time" placeholder="Inicio">
+          <input id="ev-end" type="time" placeholder="Fin">
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;">
+            <input id="ev-allday" type="checkbox" onchange="toggleAllDay()">
+            Todo el día
+          </label>
+          <select id="ev-recurrence" style="flex:1;" onchange="toggleRecurrence()">
+            <option value="none">Sin repetición</option>
+            <option value="daily">Cada día</option>
+            <option value="weekly">Cada semana</option>
+            <option value="monthly">Cada mes</option>
+            <option value="semestral">Cada 6 meses</option>
+            <option value="annual">Cada año</option>
+          </select>
+        </div>
+        <div id="ev-days-row" class="hidden">
+          <button type="button" class="day-pill" data-day="1">L</button>
+          <button type="button" class="day-pill" data-day="2">M</button>
+          <button type="button" class="day-pill" data-day="3">X</button>
+          <button type="button" class="day-pill" data-day="4">J</button>
+          <button type="button" class="day-pill" data-day="5">V</button>
+          <button type="button" class="day-pill" data-day="6">S</button>
+          <button type="button" class="day-pill" data-day="7">D</button>
+        </div>
+        <input id="ev-location" type="text" placeholder="Lugar (opcional)">
+        <textarea id="ev-description" placeholder="Notas (opcional)" rows="2"></textarea>
       </div>
-      <div id="ev-days-row" class="hidden">
-        <button type="button" class="day-pill" data-day="1">L</button>
-        <button type="button" class="day-pill" data-day="2">M</button>
-        <button type="button" class="day-pill" data-day="3">X</button>
-        <button type="button" class="day-pill" data-day="4">J</button>
-        <button type="button" class="day-pill" data-day="5">V</button>
-        <button type="button" class="day-pill" data-day="6">S</button>
-        <button type="button" class="day-pill" data-day="7">D</button>
-      </div>
-      <input id="ev-location" type="text" placeholder="Lugar (opcional)">
-      <textarea id="ev-description" placeholder="Notas (opcional)" rows="2"></textarea>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeModal('modal-event')">Cancelar</button>
-      <button class="btn btn-primary" onclick="submitEvent()">Guardar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Event detail modal ───────────────────────────────────────────────────── -->
-<div class="modal-overlay hidden" id="modal-event-detail">
-  <div class="modal">
-    <div class="modal-head">
-      <h3 id="detail-title" style="font-size:14px;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></h3>
-      <button class="icon-btn" onclick="closeModal('modal-event-detail')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="event-detail-meta" id="detail-meta"></div>
-      <div>
-        <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:8px">Asignar a</label>
-        <div class="member-checkboxes" id="detail-members"></div>
-      </div>
-    </div>
-    <div class="modal-foot" style="justify-content:space-between">
-      <button class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
-      <div style="display:flex;gap:10px;flex:1;margin-left:10px">
-        <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-event-detail')">Cancelar</button>
-        <button class="btn btn-primary" style="flex:1" onclick="saveEventAssignment()">Guardar</button>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="closeModal('modal-event')">Cancelar</button>
+        <button class="btn btn-primary" onclick="submitEvent()">Guardar</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ── Settings modal ──────────────────────────────────────────────────────── -->
-<div class="modal-overlay hidden" id="modal-settings">
-  <div class="modal" style="max-width:520px">
-    <div class="modal-head">
-      <h3>Ajustes de calendarios</h3>
-      <button class="icon-btn" onclick="closeModal('modal-settings')">✕</button>
-    </div>
-    <div style="padding:0">
-
-      <div class="settings-section" id="settings-google-section">
-        <div class="settings-section-head">
-          <div class="settings-icon" style="background:white;display:flex;align-items:center;justify-content:center;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="28" height="28">
-              <path fill="#4285F4" d="M24 9.5c3.1 0 5.8 1.1 7.9 2.9l5.9-5.9C34.5 3.3 29.6 1 24 1 14.8 1 7 6.7 3.7 14.6l6.9 5.4C12.3 13.6 17.7 9.5 24 9.5z"/>
-              <path fill="#34A853" d="M46.1 24.6c0-1.6-.1-2.8-.4-4H24v7.6h12.5c-.5 2.8-2.1 5.2-4.5 6.8l6.9 5.4C43.2 36.7 46.1 31.1 46.1 24.6z"/>
-              <path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-2.9-.8-4.6s.3-3.2.8-4.6l-6.9-5.4C2.1 17 1 20.4 1 24s1.1 7 3.7 10l6.9-5.4z"/>
-              <path fill="#EA4335" d="M24 47c5.6 0 10.4-1.9 13.9-5.1l-6.9-5.4c-1.9 1.3-4.3 2-7 2-6.3 0-11.7-4.1-13.4-9.9l-6.9 5.4C7 41.3 14.8 47 24 47z"/>
-            </svg>
-          </div>
-          <div class="settings-section-title">
-            <strong>Google Calendar</strong>
-          </div>
-          <a href="/auth/google" class="btn btn-ghost btn-sm">+ Cuenta</a>
-        </div>
-        <div id="settings-google-accounts"></div>
+  <!-- ── Event detail modal ───────────────────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="modal-event-detail">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="detail-title"
+          style="font-size:14px;max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></h3>
+        <button class="icon-btn" onclick="closeModal('modal-event-detail')">✕</button>
       </div>
-
-      <div class="settings-section">
-        <div class="settings-section-head">
-          <div class="settings-icon" style="background:black;display:flex;align-items:center;justify-content:center;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 814 1000" width="22" height="22">
-              <path fill="white" d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.3-155.5-98.8c-47.9-58.1-87.8-147.1-87.8-231 0-199.1 130.9-303.8 259.7-303.8 66.7 0 122.3 43.8 164 43.8 39.5 0 101.5-46.3 176.5-46.3zm-244.7-166.1c31.4-37.9 54.3-89.7 54.3-141.5 0-7.1-.6-14.3-1.9-20.1-51.2 1.9-113.3 34.1-149.4 77.4-28.2 32.6-55.1 84.4-55.1 136.9 0 7.7.9 15.4 1.9 17.9 3.2.6 8.4 1.3 13.6 1.3 46.2 0 102.8-30.8 136.6-71.9z"/>
-            </svg>
-          </div>
-          <div class="settings-section-title">
-            <strong>Apple Calendar</strong>
-            <span id="settings-apple-status" class="settings-status"></span>
-          </div>
-        </div>
-        <p class="settings-note">Configurado via .env (APPLE_ID + APPLE_APP_PASSWORD)</p>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-section-head">
-          <div class="settings-icon">📅</div>
-          <div class="settings-section-title">
-            <strong>Calendarios ICS</strong>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="showAddIcs()">+ Añadir</button>
-        </div>
-        <div id="settings-ics-list"></div>
-        <div class="settings-add-ics hidden" id="settings-add-ics">
-          <input id="ics-name" type="text" placeholder="Nombre (ej: Colegio de Noa)">
-          <select id="ics-member"></select>
-          <input id="ics-url" type="text" placeholder="URL (webcal:// o https://)">
-          <div class="field-group">
-            <button class="btn btn-ghost" onclick="hideAddIcs()">Cancelar</button>
-            <button class="btn btn-primary" onclick="submitAddIcs()">Guardar</button>
-          </div>
+      <div class="modal-body">
+        <div class="event-detail-meta" id="detail-meta"></div>
+        <div>
+          <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:8px">Asignar a</label>
+          <div class="member-checkboxes" id="detail-members"></div>
         </div>
       </div>
-
+      <div class="modal-foot" style="justify-content:space-between">
+        <button class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
+        <div style="display:flex;gap:10px;flex:1;margin-left:10px">
+          <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-event-detail')">Cancelar</button>
+          <button class="btn btn-primary" style="flex:1" onclick="saveEventAssignment()">Guardar</button>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ── Toast ────────────────────────────────────────────────────────────────── -->
-<div class="toast hidden" id="toast"></div>
+  <!-- ── Settings modal ──────────────────────────────────────────────────────── -->
+  <div class="modal-overlay hidden" id="modal-settings">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-head">
+        <h3>Ajustes de calendarios</h3>
+        <button class="icon-btn" onclick="closeModal('modal-settings')">✕</button>
+      </div>
+      <div style="padding:0">
 
-<script>
-// ══════════════════════════════════════════════════════════════════════════════
-// State
-// ══════════════════════════════════════════════════════════════════════════════
-let state = {
-  members: [],
-  currentMember: null,   // null = family view
-  currentWeek: new Date(),
-  calView: 'week',       // 'day' | 'week' | 'month'
-  currentDay: new Date(),
-  events: [],
-  tasks: [],
-  status: {},
-};
-let icsCalendars = [];
-let googleAccounts = [];
-let savedGoogleCals = [];
+        <div class="settings-section" id="settings-google-section">
+          <div class="settings-section-head">
+            <div class="settings-icon" style="background:white;display:flex;align-items:center;justify-content:center;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="28" height="28">
+                <path fill="#4285F4"
+                  d="M24 9.5c3.1 0 5.8 1.1 7.9 2.9l5.9-5.9C34.5 3.3 29.6 1 24 1 14.8 1 7 6.7 3.7 14.6l6.9 5.4C12.3 13.6 17.7 9.5 24 9.5z" />
+                <path fill="#34A853"
+                  d="M46.1 24.6c0-1.6-.1-2.8-.4-4H24v7.6h12.5c-.5 2.8-2.1 5.2-4.5 6.8l6.9 5.4C43.2 36.7 46.1 31.1 46.1 24.6z" />
+                <path fill="#FBBC05"
+                  d="M10.6 28.6c-.5-1.4-.8-2.9-.8-4.6s.3-3.2.8-4.6l-6.9-5.4C2.1 17 1 20.4 1 24s1.1 7 3.7 10l6.9-5.4z" />
+                <path fill="#EA4335"
+                  d="M24 47c5.6 0 10.4-1.9 13.9-5.1l-6.9-5.4c-1.9 1.3-4.3 2-7 2-6.3 0-11.7-4.1-13.4-9.9l-6.9 5.4C7 41.3 14.8 47 24 47z" />
+              </svg>
+            </div>
+            <div class="settings-section-title">
+              <strong>Google Calendar</strong>
+            </div>
+            <a href="/auth/google" class="btn btn-ghost btn-sm">+ Cuenta</a>
+          </div>
+          <div id="settings-google-accounts"></div>
+        </div>
 
-const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+        <div class="settings-section">
+          <div class="settings-section-head">
+            <div class="settings-icon" style="background:black;display:flex;align-items:center;justify-content:center;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 814 1000" width="22" height="22">
+                <path fill="white"
+                  d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-37.3-155.5-98.8c-47.9-58.1-87.8-147.1-87.8-231 0-199.1 130.9-303.8 259.7-303.8 66.7 0 122.3 43.8 164 43.8 39.5 0 101.5-46.3 176.5-46.3zm-244.7-166.1c31.4-37.9 54.3-89.7 54.3-141.5 0-7.1-.6-14.3-1.9-20.1-51.2 1.9-113.3 34.1-149.4 77.4-28.2 32.6-55.1 84.4-55.1 136.9 0 7.7.9 15.4 1.9 17.9 3.2.6 8.4 1.3 13.6 1.3 46.2 0 102.8-30.8 136.6-71.9z" />
+              </svg>
+            </div>
+            <div class="settings-section-title">
+              <strong>Apple Calendar</strong>
+              <span id="settings-apple-status" class="settings-status"></span>
+            </div>
+          </div>
+          <p class="settings-note">Configurado via .env (APPLE_ID + APPLE_APP_PASSWORD)</p>
+        </div>
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Bootstrap
-// ══════════════════════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', async () => {
-  // Theme
-  const saved = localStorage.getItem('theme') || 'dark';
-  setTheme(saved);
+        <div class="settings-section">
+          <div class="settings-section-head">
+            <div class="settings-icon">📅</div>
+            <div class="settings-section-title">
+              <strong>Calendarios ICS</strong>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="showAddIcs()">+ Añadir</button>
+          </div>
+          <div id="settings-ics-list"></div>
+          <div class="settings-add-ics hidden" id="settings-add-ics">
+            <input id="ics-name" type="text" placeholder="Nombre (ej: Colegio de Noa)">
+            <select id="ics-member"></select>
+            <input id="ics-url" type="text" placeholder="URL (webcal:// o https://)">
+            <div class="field-group">
+              <button class="btn btn-ghost" onclick="hideAddIcs()">Cancelar</button>
+              <button class="btn btn-primary" onclick="submitAddIcs()">Guardar</button>
+            </div>
+          </div>
+        </div>
 
-  // Check URL params for auth feedback
-  const params = new URLSearchParams(location.search);
-  if (params.get('connected') === '1') { showToast('✅ Google Calendar conectado'); history.replaceState({}, '', '/'); }
-  if (params.get('error'))             { showToast('⚠️ Error al conectar: ' + params.get('error')); history.replaceState({}, '', '/'); }
+      </div>
+    </div>
+  </div>
 
-  // Load status & members
-  await loadStatus();
-  await Promise.all([fetchIcsCalendars(), fetchGoogleAccounts()]);
-  renderMemberPills();
+  <!-- ── Toast ────────────────────────────────────────────────────────────────── -->
+  <div class="toast hidden" id="toast"></div>
 
-  // Parse route
-  parseRoute();
+  <script>
+    // ══════════════════════════════════════════════════════════════════════════════
+    // State
+    // ══════════════════════════════════════════════════════════════════════════════
+    let state = {
+      members: [],
+      currentMember: null,   // null = family view
+      currentWeek: new Date(),
+      calView: 'week',       // 'day' | 'week' | 'month'
+      currentDay: new Date(),
+      events: [],
+      tasks: [],
+      status: {},
+    };
+    let icsCalendars = [];
+    let googleAccounts = [];
+    let savedGoogleCals = [];
 
-  // Load data
-  await Promise.all([loadEvents(), loadTasks()]);
-  render();
-});
+    const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
-window.addEventListener('hashchange', () => { parseRoute(); Promise.all([loadEvents(), loadTasks()]).then(render); });
+    // ══════════════════════════════════════════════════════════════════════════════
+    // Bootstrap
+    // ══════════════════════════════════════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Theme
+      const saved = localStorage.getItem('theme') || 'dark';
+      setTheme(saved);
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Routing
-// ══════════════════════════════════════════════════════════════════════════════
-function parseRoute() {
-  const hash = location.hash || '#/';
-  const match = hash.match(/^#\/member\/([a-z]+)/);
-  if (match) {
-    const m = state.members.find(m => m.id === match[1]);
-    state.currentMember = m || null;
-  } else {
-    state.currentMember = null;
-  }
-  renderMemberPills();
-}
+      // Check URL params for auth feedback
+      const params = new URLSearchParams(location.search);
+      if (params.get('connected') === '1') { showToast('✅ Google Calendar conectado'); history.replaceState({}, '', '/'); }
+      if (params.get('error')) { showToast('⚠️ Error al conectar: ' + params.get('error')); history.replaceState({}, '', '/'); }
 
-function navigate(path) {
-  location.hash = '#' + path;
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// API
-// ══════════════════════════════════════════════════════════════════════════════
-async function api(method, path, body) {
-  const opts = { method, headers: { 'Content-Type': 'application/json' } };
-  if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(path, opts);
-  if (!r.ok) throw new Error(`${method} ${path} → ${r.status}`);
-  return r.json();
-}
-
-async function loadStatus() {
-  try {
-    const data = await api('GET', '/api/status');
-    state.status = data;
-    state.members = data.members;
-  } catch {}
-}
-
-async function loadEvents() {
-  const member = (state.currentMember ? state.currentMember.id : null) || '';
-  const memberQ = member ? '&member=' + member : '';
-
-  try {
-    if (state.calView === 'month') {
-      // Cargar las semanas que cubren el mes
-      const firstDay = new Date(state.currentDay.getFullYear(), state.currentDay.getMonth(), 1);
-      const lastDay = new Date(state.currentDay.getFullYear(), state.currentDay.getMonth() + 1, 0);
-      const weeks = [];
-      let d = getWeekMonday(firstDay);
-      while (d <= lastDay) {
-        weeks.push(fmtDate(new Date(d)));
-        d.setDate(d.getDate() + 7);
-      }
-      const results = await Promise.all(weeks.map(w => fetch(`/api/events?week=${w}${memberQ}`).then(r => r.json())));
-      const seen = new Set();
-      state.events = results.flatMap(r => r.events || []).filter(e => { if (seen.has(e.id)) return false; seen.add(e.id); return true; });
-    } else {
-      const week = fmtDate(getWeekMonday(state.calView === 'day' ? state.currentDay : state.currentWeek));
-      const data = await fetch(`/api/events?week=${week}${memberQ}`).then(r => r.json());
-      state.events = data.events || [];
-    }
-  } catch { state.events = []; }
-}
-
-async function loadTasks() {
-  const member = (state.currentMember ? state.currentMember.id : null) || '';
-  const url = `/api/tasks${member ? '?member='+member : ''}`;
-  try {
-    const data = await api('GET', url);
-    state.tasks = data.tasks || [];
-  } catch { state.tasks = []; }
-}
-
-async function triggerSync() {
-  const icon = document.getElementById('sync-icon');
-  icon.classList.add('spinning');
-  const prevSync = state.status.last_sync;
-  try {
-    await api('POST', '/api/sync');
-    let attempts = 0;
-    const poll = setInterval(async () => {
-      attempts++;
+      // Load status & members
       await loadStatus();
-      if (state.status.last_sync !== prevSync || attempts >= 20) {
-        clearInterval(poll);
-        await loadEvents();
-        render();
-        icon.classList.remove('spinning');
-        showToast('✅ Calendarios sincronizados');
+      await Promise.all([fetchIcsCalendars(), fetchGoogleAccounts()]);
+      renderMemberPills();
+
+      // Parse route
+      parseRoute();
+
+      // Load data
+      await Promise.all([loadEvents(), loadTasks()]);
+      render();
+    });
+
+    window.addEventListener('hashchange', () => { parseRoute(); Promise.all([loadEvents(), loadTasks()]).then(render); });
+
+    // ══════════════════════════════════════════════════════════════════════════════
+    // Routing
+    // ══════════════════════════════════════════════════════════════════════════════
+    function parseRoute() {
+      const hash = location.hash || '#/';
+      const match = hash.match(/^#\/member\/([a-z]+)/);
+      if (match) {
+        const m = state.members.find(m => m.id === match[1]);
+        state.currentMember = m || null;
+      } else {
+        state.currentMember = null;
       }
-    }, 2000);
-  } catch {
-    icon.classList.remove('spinning');
-    showToast('⚠️ Error al sincronizar');
-  }
-}
+      renderMemberPills();
+    }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Render
-// ══════════════════════════════════════════════════════════════════════════════
-function render() {
-  renderStatusBanner();
-  const app = document.getElementById('app');
-  if (state.currentMember) {
-    app.innerHTML = renderMemberView();
-  } else {
-    app.innerHTML = renderFamilyView();
-  }
-}
+    function navigate(path) {
+      location.hash = '#' + path;
+    }
 
-function renderFamilyView() {
-  return `
+    // ══════════════════════════════════════════════════════════════════════════════
+    // API
+    // ══════════════════════════════════════════════════════════════════════════════
+    async function api(method, path, body) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(path, opts);
+      if (!r.ok) throw new Error(`${method} ${path} → ${r.status}`);
+      return r.json();
+    }
+
+    async function loadStatus() {
+      try {
+        const data = await api('GET', '/api/status');
+        state.status = data;
+        state.members = data.members;
+      } catch { }
+    }
+
+    async function loadEvents() {
+      const member = (state.currentMember ? state.currentMember.id : null) || '';
+      const memberQ = member ? '&member=' + member : '';
+
+      try {
+        if (state.calView === 'month') {
+          // Cargar las semanas que cubren el mes
+          const firstDay = new Date(state.currentDay.getFullYear(), state.currentDay.getMonth(), 1);
+          const lastDay = new Date(state.currentDay.getFullYear(), state.currentDay.getMonth() + 1, 0);
+          const weeks = [];
+          let d = getWeekMonday(firstDay);
+          while (d <= lastDay) {
+            weeks.push(fmtDate(new Date(d)));
+            d.setDate(d.getDate() + 7);
+          }
+          const results = await Promise.all(weeks.map(w => fetch(`/api/events?week=${w}${memberQ}`).then(r => r.json())));
+          const seen = new Set();
+          state.events = results.flatMap(r => r.events || []).filter(e => { if (seen.has(e.id)) return false; seen.add(e.id); return true; });
+        } else {
+          const week = fmtDate(getWeekMonday(state.calView === 'day' ? state.currentDay : state.currentWeek));
+          const data = await fetch(`/api/events?week=${week}${memberQ}`).then(r => r.json());
+          state.events = data.events || [];
+        }
+      } catch { state.events = []; }
+    }
+
+    async function loadTasks() {
+      const member = (state.currentMember ? state.currentMember.id : null) || '';
+      const url = `/api/tasks${member ? '?member=' + member : ''}`;
+      try {
+        const data = await api('GET', url);
+        state.tasks = data.tasks || [];
+      } catch { state.tasks = []; }
+    }
+
+    async function triggerSync() {
+      const icon = document.getElementById('sync-icon');
+      icon.classList.add('spinning');
+      const prevSync = state.status.last_sync;
+      try {
+        await api('POST', '/api/sync');
+        let attempts = 0;
+        const poll = setInterval(async () => {
+          attempts++;
+          await loadStatus();
+          if (state.status.last_sync !== prevSync || attempts >= 20) {
+            clearInterval(poll);
+            await loadEvents();
+            render();
+            icon.classList.remove('spinning');
+            showToast('✅ Calendarios sincronizados');
+          }
+        }, 2000);
+      } catch {
+        icon.classList.remove('spinning');
+        showToast('⚠️ Error al sincronizar');
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════════
+    // Render
+    // ══════════════════════════════════════════════════════════════════════════════
+    function render() {
+      renderStatusBanner();
+      const app = document.getElementById('app');
+      if (state.currentMember) {
+        app.innerHTML = renderMemberView();
+      } else {
+        app.innerHTML = renderFamilyView();
+      }
+    }
+
+    function renderFamilyView() {
+      return `
     <div class="main">
       <div>${renderCalendar()}</div>
       <div>${renderTaskPanel()}</div>
     </div>`;
-}
+    }
 
-function renderMemberView() {
-  const m = state.currentMember;
-  const lightBg = colorBg(m.id);
-  return `
+    function renderMemberView() {
+      const m = state.currentMember;
+      const lightBg = colorBg(m.id);
+      return `
     <div class="member-hero">
-      <div class="member-avatar" style="background:${lightBg}">${m.emoji}</div>
+      <img src="${m.image}" class="member-avatar" alt="${m.name}" style="object-fit: cover; background: ${lightBg};" />
       <div>
         <h1 style="color:${m.color}">${m.name}</h1>
         <p>Vista personal · <a href="#/" style="color:${m.color}">← Volver a familia</a></p>
@@ -788,15 +1515,15 @@ function renderMemberView() {
       <div>${renderCalendar()}</div>
       <div>${renderTaskPanel()}</div>
     </div>`;
-}
+    }
 
-// ── Status banner ─────────────────────────────────────────────────────────────
-function renderStatusBanner() {
-  const el = document.getElementById('status-banner');
-  const s = state.status;
-  const hasAny = googleAccounts.length > 0 || s.apple_configured || icsCalendars.length > 0;
-  if (!hasAny) {
-    el.innerHTML = `
+    // ── Status banner ─────────────────────────────────────────────────────────────
+    function renderStatusBanner() {
+      const el = document.getElementById('status-banner');
+      const s = state.status;
+      const hasAny = googleAccounts.length > 0 || s.apple_configured || icsCalendars.length > 0;
+      if (!hasAny) {
+        el.innerHTML = `
       <div class="banner banner-warn">
         <span>📅</span>
         <div class="b-msg">
@@ -805,13 +1532,13 @@ function renderStatusBanner() {
         </div>
         <button class="btn btn-ghost btn-sm" onclick="openSettings()">Ajustes</button>
       </div>`;
-  } else {
-    const parts = [];
-    if (googleAccounts.length) parts.push(`Google (${googleAccounts.length})`);
-    if (s.apple_configured) parts.push('Apple ✓');
-    if (icsCalendars.length) parts.push(`ICS (${icsCalendars.length})`);
-    const lastSync = s.last_sync ? 'Última sync: ' + fmtRelative(s.last_sync) : 'Sin sincronizar aún';
-    el.innerHTML = `
+      } else {
+        const parts = [];
+        if (googleAccounts.length) parts.push(`Google (${googleAccounts.length})`);
+        if (s.apple_configured) parts.push('Apple ✓');
+        if (icsCalendars.length) parts.push(`ICS (${icsCalendars.length})`);
+        const lastSync = s.last_sync ? 'Última sync: ' + fmtRelative(s.last_sync) : 'Sin sincronizar aún';
+        el.innerHTML = `
       <div class="banner banner-ok" style="margin-bottom:0">
         <span>🔗</span>
         <div class="b-msg">
@@ -819,56 +1546,56 @@ function renderStatusBanner() {
           ${lastSync}
         </div>
       </div>`;
-  }
-}
+      }
+    }
 
-// ── Member pills ──────────────────────────────────────────────────────────────
-function renderMemberPills() {
-  const container = document.getElementById('member-pills');
-  if (!container || !state.members.length) return;
-  const shown = state.members.filter(m => !m.category && m.id !== 'family');
-  container.innerHTML = shown.map(m => {
-    const active = (state.currentMember ? state.currentMember.id : null) === m.id;
-    return `<button class="member-pill${active ? ' active' : ''}"
-        style="color:${m.color}${active ? ';background:'+colorBg(m.id) : ''}"
+    // ── Member pills ──────────────────────────────────────────────────────────────
+    function renderMemberPills() {
+      const container = document.getElementById('member-pills');
+      if (!container || !state.members.length) return;
+      const shown = state.members.filter(m => !m.category && m.id !== 'family');
+      container.innerHTML = shown.map(m => {
+        const active = (state.currentMember ? state.currentMember.id : null) === m.id;
+        return `<button class="member-pill${active ? ' active' : ''}"
+        style="color:${m.color}${active ? ';background:' + colorBg(m.id) : ''}"
         onclick="navigate('/member/${m.id}')">
-        <span class="emoji">${m.emoji}</span>${m.name}
+        <img src="${m.image}" alt="${m.name}" style="width: 16px; height: 16px; border-radius: 50%; object-fit: cover; vertical-align: middle;" />${m.name}
       </button>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-// ── Calendar dispatcher ───────────────────────────────────────────────────────
-function renderCalendar() {
-  if (state.calView === 'day') return renderDayView();
-  else if (state.calView === 'month') return renderMonthView();
-  else return renderWeekView();
-}
+    // ── Calendar dispatcher ───────────────────────────────────────────────────────
+    function renderCalendar() {
+      if (state.calView === 'day') return renderDayView();
+      else if (state.calView === 'month') return renderMonthView();
+      else return renderWeekView();
+    }
 
-function renderWeekView() {
-  const days = getWeekDays(state.currentWeek);
-  const today = new Date(); today.setHours(0,0,0,0);
-  const first = days[0], last = days[6];
-  const weekLabel = first.getMonth() === last.getMonth()
-    ? `${first.getDate()}–${last.getDate()} de ${MONTHS[first.getMonth()]} ${first.getFullYear()}`
-    : `${first.getDate()} ${MONTHS[first.getMonth()]} – ${last.getDate()} ${MONTHS[last.getMonth()]} ${last.getFullYear()}`;
+    function renderWeekView() {
+      const days = getWeekDays(state.currentWeek);
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const first = days[0], last = days[6];
+      const weekLabel = first.getMonth() === last.getMonth()
+        ? `${first.getDate()}–${last.getDate()} de ${MONTHS[first.getMonth()]} ${first.getFullYear()}`
+        : `${first.getDate()} ${MONTHS[first.getMonth()]} – ${last.getDate()} ${MONTHS[last.getMonth()]} ${last.getFullYear()}`;
 
-  const cols = days.map((day, i) => {
-    const dateStr = fmtDate(day);
-    const isToday = day.getTime() === today.getTime();
-    const isPast  = day < today;
-    const dayEvents = state.events.filter(e => e.start_dt.slice(0,10) === dateStr);
+      const cols = days.map((day, i) => {
+        const dateStr = fmtDate(day);
+        const isToday = day.getTime() === today.getTime();
+        const isPast = day < today;
+        const dayEvents = state.events.filter(e => e.start_dt.slice(0, 10) === dateStr);
 
-    const chips = dayEvents.map(ev => {
-      const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
-      const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
-      const dots = members.length > 1
-        ? `<span class="evt-members">${members.map(id => { const m = state.members.find(x => x.id === id); return m ? m.emoji : ''; }).join('')}</span>`
-        : '';
-      const time = ev.all_day ? '' : `<span class="evt-time">${ev.start_dt.slice(11,16)}</span>`;
-      return `<div class="event-chip ${colorClass}" style="cursor:pointer" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}${ev.location ? ' · '+escHtml(ev.location) : ''}">${time}${escHtml(ev.title)}${dots}</div>`;
-    }).join('');
+        const chips = dayEvents.map(ev => {
+          const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+          const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
+          const dots = members.length > 1
+            ? `<span class="evt-members">${members.map(id => { const m = state.members.find(x => x.id === id); return m ? m.emoji : ''; }).join('')}</span>`
+            : '';
+          const time = ev.all_day ? '' : `<span class="evt-time">${ev.start_dt.slice(11, 16)}</span>`;
+          return `<div class="event-chip ${colorClass}" style="cursor:pointer" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}${ev.location ? ' · ' + escHtml(ev.location) : ''}">${time}${escHtml(ev.title)}${dots}</div>`;
+        }).join('');
 
-    return `
+        return `
       <div class="day-col${isToday ? ' today' : ''}${isPast && !isToday ? ' past' : ''}">
         <div class="day-head">
           <div class="day-name">${DAYS[i]}</div>
@@ -879,9 +1606,9 @@ function renderWeekView() {
           <button class="add-day-btn" onclick="openAddEventOn('${dateStr}')">+</button>
         </div>
       </div>`;
-  }).join('');
+      }).join('');
 
-  return `
+      return `
     <div class="calendar-card">
       <div class="cal-header">
         <div class="cal-nav">
@@ -898,41 +1625,41 @@ function renderWeekView() {
       </div>
       <div class="week-grid">${cols}</div>
     </div>`;
-}
+    }
 
-function renderDayView() {
-  const d = state.currentDay;
-  const dayStr = fmtDate(d);
-  const dayEvents = state.events.filter(e => (e.start_dt || '').startsWith(dayStr));
-  const dayName = d.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
+    function renderDayView() {
+      const d = state.currentDay;
+      const dayStr = fmtDate(d);
+      const dayEvents = state.events.filter(e => (e.start_dt || '').startsWith(dayStr));
+      const dayName = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  const monday = getWeekMonday(d);
-  const dayNav = Array.from({length:7}, (_,i) => {
-    const dd = new Date(monday); dd.setDate(monday.getDate() + i);
-    const ds = fmtDate(dd);
-    const isToday = ds === fmtDate(new Date());
-    const isSel = ds === dayStr;
-    return `<button onclick="selectDay('${ds}')" style="flex:1;padding:6px 4px;border-radius:8px;border:none;cursor:pointer;background:${isSel?'#7C3AED':isToday?'rgba(124,58,237,.15)':'transparent'};color:${isSel?'#fff':'var(--text)'};font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;">
-      <span style="font-size:10px;color:${isSel?'rgba(255,255,255,.7)':'var(--text-muted)'};">${DAY_NAMES[dd.getDay()]}</span>
+      const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const monday = getWeekMonday(d);
+      const dayNav = Array.from({ length: 7 }, (_, i) => {
+        const dd = new Date(monday); dd.setDate(monday.getDate() + i);
+        const ds = fmtDate(dd);
+        const isToday = ds === fmtDate(new Date());
+        const isSel = ds === dayStr;
+        return `<button onclick="selectDay('${ds}')" style="flex:1;padding:6px 4px;border-radius:8px;border:none;cursor:pointer;background:${isSel ? '#7C3AED' : isToday ? 'rgba(124,58,237,.15)' : 'transparent'};color:${isSel ? '#fff' : 'var(--text)'};font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <span style="font-size:10px;color:${isSel ? 'rgba(255,255,255,.7)' : 'var(--text-muted)'};">${DAY_NAMES[dd.getDay()]}</span>
       <span>${dd.getDate()}</span>
     </button>`;
-  }).join('');
+      }).join('');
 
-  const evList = dayEvents.length
-    ? dayEvents.sort((a,b) => a.start_dt.localeCompare(b.start_dt)).map(ev => {
-        const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
-        const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
-        const time = ev.all_day ? 'Todo el día' : ev.start_dt.slice(11,16);
-        return `<div class="event-chip ${colorClass}" style="padding:10px 12px;margin-bottom:6px;white-space:normal;cursor:pointer;font-size:13px;" onclick="openEventDetail('${ev.id}')">
+      const evList = dayEvents.length
+        ? dayEvents.sort((a, b) => a.start_dt.localeCompare(b.start_dt)).map(ev => {
+          const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+          const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
+          const time = ev.all_day ? 'Todo el día' : ev.start_dt.slice(11, 16);
+          return `<div class="event-chip ${colorClass}" style="padding:10px 12px;margin-bottom:6px;white-space:normal;cursor:pointer;font-size:13px;" onclick="openEventDetail('${ev.id}')">
           <div style="font-size:11px;opacity:.6;margin-bottom:2px;">${time}</div>
           <div>${escHtml(ev.title)}</div>
           ${ev.location ? `<div style="font-size:11px;opacity:.6;margin-top:2px;">📍 ${escHtml(ev.location)}</div>` : ''}
         </div>`;
-      }).join('')
-    : '<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin eventos</p>';
+        }).join('')
+        : '<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin eventos</p>';
 
-  return `
+      return `
     <div class="calendar-card">
       <div class="cal-header">
         <button class="icon-btn" onclick="navDay(-1)">‹</button>
@@ -948,59 +1675,59 @@ function renderDayView() {
       <div style="display:flex;gap:4px;padding:10px 14px;border-bottom:1px solid var(--border);">${dayNav}</div>
       <div style="padding:12px 14px;">${evList}</div>
     </div>`;
-}
+    }
 
-function selectDay(dateStr) {
-  state.currentDay = new Date(dateStr + 'T00:00:00');
-  render();
-}
+    function selectDay(dateStr) {
+      state.currentDay = new Date(dateStr + 'T00:00:00');
+      render();
+    }
 
-function navDay(dir) {
-  state.currentDay.setDate(state.currentDay.getDate() + dir);
-  state.currentWeek = getWeekMonday(state.currentDay);
-  loadEvents().then(render);
-}
+    function navDay(dir) {
+      state.currentDay.setDate(state.currentDay.getDate() + dir);
+      state.currentWeek = getWeekMonday(state.currentDay);
+      loadEvents().then(render);
+    }
 
-function renderMonthView() {
-  const year = state.currentDay.getFullYear();
-  const month = state.currentDay.getMonth();
-  const monthName = state.currentDay.toLocaleDateString('es-ES', { month:'long', year:'numeric' });
+    function renderMonthView() {
+      const year = state.currentDay.getFullYear();
+      const month = state.currentDay.getMonth();
+      const monthName = state.currentDay.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
 
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const startCell = getWeekMonday(firstDay);
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startCell = getWeekMonday(firstDay);
 
-  const todayStr = fmtDate(new Date());
+      const todayStr = fmtDate(new Date());
 
-  const dayHeaders = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  const headers = dayHeaders.map(d => `<div style="text-align:center;font-size:11px;font-weight:600;color:var(--text-muted);padding:6px 0;">${d}</div>`).join('');
+      const dayHeaders = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+      const headers = dayHeaders.map(d => `<div style="text-align:center;font-size:11px;font-weight:600;color:var(--text-muted);padding:6px 0;">${d}</div>`).join('');
 
-  const cells = [];
-  const d = new Date(startCell);
-  while (d <= lastDay || cells.length % 7 !== 0) {
-    const ds = fmtDate(d);
-    const isCurrentMonth = d.getMonth() === month;
-    const isToday = ds === todayStr;
-    const dayEvents = state.events.filter(e => (e.start_dt || '').startsWith(ds));
+      const cells = [];
+      const d = new Date(startCell);
+      while (d <= lastDay || cells.length % 7 !== 0) {
+        const ds = fmtDate(d);
+        const isCurrentMonth = d.getMonth() === month;
+        const isToday = ds === todayStr;
+        const dayEvents = state.events.filter(e => (e.start_dt || '').startsWith(ds));
 
-    const evChips = dayEvents.slice(0,3).map(ev => {
-      const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
-      const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
-      return `<div class="event-chip ${colorClass}" style="font-size:10px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}">${escHtml(ev.title)}</div>`;
-    }).join('');
-    const more = dayEvents.length > 3 ? `<div style="font-size:10px;color:var(--text-muted);padding:1px 4px;">+${dayEvents.length-3} más</div>` : '';
+        const evChips = dayEvents.slice(0, 3).map(ev => {
+          const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+          const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
+          return `<div class="event-chip ${colorClass}" style="font-size:10px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}">${escHtml(ev.title)}</div>`;
+        }).join('');
+        const more = dayEvents.length > 3 ? `<div style="font-size:10px;color:var(--text-muted);padding:1px 4px;">+${dayEvents.length - 3} más</div>` : '';
 
-    cells.push(`
-      <div style="border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:80px;padding:4px;opacity:${isCurrentMonth?1:.35};background:${isToday?'rgba(124,58,237,.08)':'transparent'};cursor:pointer;" onclick="selectDay('${ds}');setCalView('day')">
-        <div style="font-size:12px;font-weight:${isToday?700:500};color:${isToday?'#7C3AED':'var(--text)'};margin-bottom:3px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:${isToday?'rgba(124,58,237,.15)':'transparent'};">${d.getDate()}</div>
+        cells.push(`
+      <div style="border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:80px;padding:4px;opacity:${isCurrentMonth ? 1 : .35};background:${isToday ? 'rgba(124,58,237,.08)' : 'transparent'};cursor:pointer;" onclick="selectDay('${ds}');setCalView('day')">
+        <div style="font-size:12px;font-weight:${isToday ? 700 : 500};color:${isToday ? '#7C3AED' : 'var(--text)'};margin-bottom:3px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:${isToday ? 'rgba(124,58,237,.15)' : 'transparent'};">${d.getDate()}</div>
         ${evChips}${more}
       </div>
     `);
-    d.setDate(d.getDate() + 1);
-    if (cells.length > 42) break;
-  }
+        d.setDate(d.getDate() + 1);
+        if (cells.length > 42) break;
+      }
 
-  return `
+      return `
     <div class="calendar-card">
       <div class="cal-header">
         <button class="icon-btn" onclick="navMonth(-1)">‹</button>
@@ -1018,25 +1745,25 @@ function renderMonthView() {
         ${cells.join('')}
       </div>
     </div>`;
-}
+    }
 
-function navMonth(dir) {
-  state.currentDay.setMonth(state.currentDay.getMonth() + dir);
-  loadEvents().then(render);
-}
+    function navMonth(dir) {
+      state.currentDay.setMonth(state.currentDay.getMonth() + dir);
+      loadEvents().then(render);
+    }
 
-// ── Task panel ────────────────────────────────────────────────────────────────
-function renderTaskPanel() {
-  const pending = state.tasks.filter(t => !t.completed);
-  const done    = state.tasks.filter(t =>  t.completed);
+    // ── Task panel ────────────────────────────────────────────────────────────────
+    function renderTaskPanel() {
+      const pending = state.tasks.filter(t => !t.completed);
+      const done = state.tasks.filter(t => t.completed);
 
-  const taskRows = [...pending, ...done].map(t => renderTaskRow(t)).join('');
+      const taskRows = [...pending, ...done].map(t => renderTaskRow(t)).join('');
 
-  const empty = state.tasks.length === 0
-    ? `<div class="empty"><div class="empty-icon">✅</div><p>Sin tareas pendientes</p></div>`
-    : '';
+      const empty = state.tasks.length === 0
+        ? `<div class="empty"><div class="empty-icon">✅</div><p>Sin tareas pendientes</p></div>`
+        : '';
 
-  return `
+      return `
     <div class="tasks-card">
       <div class="tasks-head">
         <h2>Tareas</h2>
@@ -1063,18 +1790,18 @@ function renderTaskPanel() {
         </div>
       </form>
     </div>`;
-}
+    }
 
-function renderTaskRow(t) {
-  const m = state.members.find(m => m.id === t.member_id) || state.members[state.members.length-1];
-  const dueLabel = t.due_date ? formatDue(t.due_date) : '';
-  const overdue  = t.due_date && !t.completed && new Date(t.due_date+'T23:59:59') < new Date();
-  const priIcon  = {high:'🔴', medium:'🟡', low:'🟢'}[t.priority] || '';
+    function renderTaskRow(t) {
+      const m = state.members.find(m => m.id === t.member_id) || state.members[state.members.length - 1];
+      const dueLabel = t.due_date ? formatDue(t.due_date) : '';
+      const overdue = t.due_date && !t.completed && new Date(t.due_date + 'T23:59:59') < new Date();
+      const priIcon = { high: '🔴', medium: '🟡', low: '🟢' }[t.priority] || '';
 
-  return `
+      return `
     <div class="task-row${t.completed ? ' done' : ''}" id="task-${t.id}">
       <div class="task-check${t.completed ? ' checked' : ''}"
-           style="${t.completed ? 'background:'+m.color : ''}"
+           style="${t.completed ? 'background:' + m.color : ''}"
            onclick="toggleTask('${t.id}', ${t.completed ? 0 : 1})">
         <span class="check-icon">✓</span>
       </div>
@@ -1088,347 +1815,347 @@ function renderTaskRow(t) {
       </div>
       <button class="task-del" onclick="deleteTask('${t.id}')" title="Eliminar">✕</button>
     </div>`;
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// Actions
-// ══════════════════════════════════════════════════════════════════════════════
-
-// -- View switcher --
-function setCalView(view) {
-  state.calView = view;
-  document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('vbtn-' + view);
-  if (btn) btn.classList.add('active');
-  loadEvents().then(render);
-}
-
-// -- Week navigation --
-function changeWeek(delta) {
-  state.currentWeek = new Date(state.currentWeek.getTime() + delta * 7 * 86400000);
-  loadEvents().then(render);
-}
-function goToday() {
-  const today = new Date();
-  state.currentWeek = getWeekMonday(today);
-  state.currentDay = today;
-  loadEvents().then(render);
-}
-
-// -- Add event modal --
-function openAddEvent() { openAddEventOn(fmtDate(new Date())); }
-function openAddEventOn(dateStr) {
-  // Populate member select
-  const sel = document.getElementById('ev-member');
-  sel.innerHTML = state.members.map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
-  if (state.currentMember) sel.value = state.currentMember.id;
-
-  document.getElementById('ev-date').value = dateStr;
-  document.getElementById('ev-title').value = '';
-  document.getElementById('ev-location').value = '';
-  document.getElementById('ev-description').value = '';
-  document.getElementById('ev-allday').checked = false;
-  document.getElementById('ev-start').disabled = false;
-  document.getElementById('ev-end').disabled = false;
-  document.getElementById('ev-recurrence').value = 'none';
-  document.getElementById('ev-days-row').classList.add('hidden');
-  document.querySelectorAll('.day-pill').forEach(btn => { btn.dataset.sel = '0'; btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; });
-  document.getElementById('modal-event').classList.remove('hidden');
-  setTimeout(() => document.getElementById('ev-title').focus(), 50);
-}
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-function toggleAllDay() {
-  const allDay = document.getElementById('ev-allday').checked;
-  document.getElementById('ev-start').disabled = allDay;
-  document.getElementById('ev-end').disabled   = allDay;
-}
-function toggleRecurrence() {
-  const val = document.getElementById('ev-recurrence').value;
-  const row = document.getElementById('ev-days-row');
-  if (val === 'weekly') { row.classList.remove('hidden'); }
-  else { row.classList.add('hidden'); }
-}
-document.querySelectorAll('.day-pill').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const on = btn.dataset.sel === '1';
-    btn.dataset.sel = on ? '0' : '1';
-    btn.style.background  = on ? '' : '#7C3AED';
-    btn.style.color       = on ? '' : '#fff';
-    btn.style.borderColor = on ? '' : '#7C3AED';
-  });
-});
-function generateRecurringDates(startDate, recurrence, days) {
-  const ref = new Date(startDate + 'T00:00:00');
-  const limit = new Date(ref);
-  limit.setFullYear(limit.getFullYear() + 2);
-  const dates = [];
-  const push = d => dates.push(fmtDate(d));
-  if (recurrence === 'none') { push(ref); return dates; }
-  if (recurrence === 'daily') {
-    for (let d = new Date(ref); d <= limit; d.setDate(d.getDate() + 1)) push(new Date(d));
-  } else if (recurrence === 'weekly') {
-    for (let d = new Date(ref); d <= limit; d.setDate(d.getDate() + 1)) {
-      const dow = d.getDay() === 0 ? 7 : d.getDay(); // 1=Mon…7=Sun
-      if (days.includes(dow)) push(new Date(d));
     }
-  } else if (recurrence === 'monthly') {
-    for (let d = new Date(ref); d <= limit; d.setMonth(d.getMonth() + 1)) push(new Date(d));
-  } else if (recurrence === 'semestral') {
-    for (let d = new Date(ref); d <= limit; d.setMonth(d.getMonth() + 6)) push(new Date(d));
-  } else if (recurrence === 'annual') {
-    limit.setFullYear(limit.getFullYear() + 3);
-    for (let d = new Date(ref); d <= limit; d.setFullYear(d.getFullYear() + 1)) push(new Date(d));
-  }
-  return dates;
-}
-async function submitEvent() {
-  const title = document.getElementById('ev-title').value.trim();
-  if (!title) return;
-  const date       = document.getElementById('ev-date').value;
-  const allDay     = document.getElementById('ev-allday').checked;
-  const start      = document.getElementById('ev-start').value;
-  const end        = document.getElementById('ev-end').value;
-  const member     = document.getElementById('ev-member').value;
-  const loc        = document.getElementById('ev-location').value.trim();
-  const desc       = document.getElementById('ev-description').value.trim();
-  const recurrence = document.getElementById('ev-recurrence').value;
-  const days       = recurrence === 'weekly'
-    ? Array.from(document.querySelectorAll('.day-pill')).filter(b => b.dataset.sel === '1').map(btn => parseInt(btn.dataset.day))
-    : [];
 
-  const dates = generateRecurringDates(date, recurrence, days);
-  if (!dates.length) { showToast('⚠️ Selecciona al menos un día'); return; }
+    // ══════════════════════════════════════════════════════════════════════════════
+    // Actions
+    // ══════════════════════════════════════════════════════════════════════════════
 
-  try {
-    for (const d of dates) {
-      const start_dt = allDay ? d : (start ? `${d}T${start}:00` : d);
-      const end_dt   = allDay ? d : (end   ? `${d}T${end}:00`   : start_dt);
-      await api('POST', '/api/events', { title, start_dt, end_dt, all_day: allDay, member_id: member, location: loc || null, description: desc || null });
+    // -- View switcher --
+    function setCalView(view) {
+      state.calView = view;
+      document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
+      const btn = document.getElementById('vbtn-' + view);
+      if (btn) btn.classList.add('active');
+      loadEvents().then(render);
     }
-    closeModal('modal-event');
-    await loadEvents();
-    render();
-    showToast(dates.length > 1 ? `📅 ${dates.length} eventos añadidos` : '📅 Evento añadido');
-  } catch { showToast('⚠️ Error al guardar'); }
-}
 
-// -- Tasks --
-function toggleAddTaskForm() {
-  const form = document.getElementById('add-task-form');
-  if (!form) return;
-  form.classList.toggle('hidden');
-  if (!form.classList.contains('hidden')) {
-    if (state.currentMember) document.getElementById('task-member').value = state.currentMember.id;
-    document.getElementById('task-title').focus();
-  }
-}
-async function submitTask(e) {
-  e.preventDefault();
-  const title    = document.getElementById('task-title').value.trim();
-  const member   = document.getElementById('task-member').value;
-  const priority = document.getElementById('task-priority').value;
-  const due_date = document.getElementById('task-due').value || null;
-  if (!title) return;
-  try {
-    await api('POST', '/api/tasks', { title, member_id: member, priority, due_date });
-    document.getElementById('task-title').value = '';
-    document.getElementById('task-due').value = '';
-    await loadTasks();
-    render();
-    showToast('✅ Tarea añadida');
-  } catch { showToast('⚠️ Error al guardar'); }
-}
-async function toggleTask(id, completed) {
-  try {
-    await api('PATCH', `/api/tasks/${id}`, { completed: !!completed });
-    const t = state.tasks.find(t => t.id === id);
-    if (t) t.completed = completed;
-    // Re-render just the task row for speed
-    const row = document.getElementById('task-'+id);
-    if (row) {
-      const updated = state.tasks.find(t => t.id === id);
-      if (updated) { updated.completed = completed; row.outerHTML = renderTaskRow(updated); }
+    // -- Week navigation --
+    function changeWeek(delta) {
+      state.currentWeek = new Date(state.currentWeek.getTime() + delta * 7 * 86400000);
+      loadEvents().then(render);
     }
-  } catch {}
-}
-async function deleteTask(id) {
-  try {
-    await api('DELETE', `/api/tasks/${id}`);
-    state.tasks = state.tasks.filter(t => t.id !== id);
-    const row = document.getElementById('task-'+id);
-    if (row) row.remove();
-    showToast('🗑 Tarea eliminada');
-  } catch {}
-}
+    function goToday() {
+      const today = new Date();
+      state.currentWeek = getWeekMonday(today);
+      state.currentDay = today;
+      loadEvents().then(render);
+    }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Utilities
-// ══════════════════════════════════════════════════════════════════════════════
-function getWeekMonday(date) {
-  const d = new Date(date); d.setHours(0,0,0,0);
-  const day = d.getDay(); // 0=Sun
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  return d;
-}
-function getWeekDays(date) {
-  const mon = getWeekMonday(date);
-  return Array.from({length:7}, (_,i) => { const d = new Date(mon); d.setDate(mon.getDate()+i); return d; });
-}
-function fmtDate(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-function fmtRelative(iso) {
-  const d = new Date(iso), now = new Date();
-  const diff = Math.floor((now - d) / 60000);
-  if (diff < 1)  return 'ahora mismo';
-  if (diff < 60) return `hace ${diff}m`;
-  const h = Math.floor(diff/60);
-  if (h < 24)    return `hace ${h}h`;
-  return `hace ${Math.floor(h/24)}d`;
-}
-function formatDue(dateStr) {
-  const d = new Date(dateStr+'T00:00:00'), now = new Date();
-  now.setHours(0,0,0,0);
-  const diff = Math.round((d-now)/86400000);
-  if (diff === 0)  return 'Hoy';
-  if (diff === 1)  return 'Mañana';
-  if (diff === -1) return 'Ayer';
-  if (diff < 0)    return `Hace ${-diff}d`;
-  if (diff < 7)    return `En ${diff}d`;
-  return d.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
-}
-function colorBg(memberId) {
-  const map = {ale:'var(--ale-bg)', miguel:'var(--miguel-bg)', noa:'var(--noa-bg)', oli:'var(--oli-bg)', family:'var(--family-bg)', birthday:'#2d1f06'};
-  return map[memberId] || 'var(--surface2)';
-}
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+    // -- Add event modal --
+    function openAddEvent() { openAddEventOn(fmtDate(new Date())); }
+    function openAddEventOn(dateStr) {
+      // Populate member select
+      const sel = document.getElementById('ev-member');
+      sel.innerHTML = state.members.map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
+      if (state.currentMember) sel.value = state.currentMember.id;
 
-// ── Theme ─────────────────────────────────────────────────────────────────────
-function setTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('theme-btn').textContent = t === 'dark' ? '🌙' : '☀️';
-  localStorage.setItem('theme', t);
-}
-function toggleTheme() {
-  setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
-}
+      document.getElementById('ev-date').value = dateStr;
+      document.getElementById('ev-title').value = '';
+      document.getElementById('ev-location').value = '';
+      document.getElementById('ev-description').value = '';
+      document.getElementById('ev-allday').checked = false;
+      document.getElementById('ev-start').disabled = false;
+      document.getElementById('ev-end').disabled = false;
+      document.getElementById('ev-recurrence').value = 'none';
+      document.getElementById('ev-days-row').classList.add('hidden');
+      document.querySelectorAll('.day-pill').forEach(btn => { btn.dataset.sel = '0'; btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; });
+      document.getElementById('modal-event').classList.remove('hidden');
+      setTimeout(() => document.getElementById('ev-title').focus(), 50);
+    }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function toggleAllDay() {
+      const allDay = document.getElementById('ev-allday').checked;
+      document.getElementById('ev-start').disabled = allDay;
+      document.getElementById('ev-end').disabled = allDay;
+    }
+    function toggleRecurrence() {
+      const val = document.getElementById('ev-recurrence').value;
+      const row = document.getElementById('ev-days-row');
+      if (val === 'weekly') { row.classList.remove('hidden'); }
+      else { row.classList.add('hidden'); }
+    }
+    document.querySelectorAll('.day-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const on = btn.dataset.sel === '1';
+        btn.dataset.sel = on ? '0' : '1';
+        btn.style.background = on ? '' : '#7C3AED';
+        btn.style.color = on ? '' : '#fff';
+        btn.style.borderColor = on ? '' : '#7C3AED';
+      });
+    });
+    function generateRecurringDates(startDate, recurrence, days) {
+      const ref = new Date(startDate + 'T00:00:00');
+      const limit = new Date(ref);
+      limit.setFullYear(limit.getFullYear() + 2);
+      const dates = [];
+      const push = d => dates.push(fmtDate(d));
+      if (recurrence === 'none') { push(ref); return dates; }
+      if (recurrence === 'daily') {
+        for (let d = new Date(ref); d <= limit; d.setDate(d.getDate() + 1)) push(new Date(d));
+      } else if (recurrence === 'weekly') {
+        for (let d = new Date(ref); d <= limit; d.setDate(d.getDate() + 1)) {
+          const dow = d.getDay() === 0 ? 7 : d.getDay(); // 1=Mon…7=Sun
+          if (days.includes(dow)) push(new Date(d));
+        }
+      } else if (recurrence === 'monthly') {
+        for (let d = new Date(ref); d <= limit; d.setMonth(d.getMonth() + 1)) push(new Date(d));
+      } else if (recurrence === 'semestral') {
+        for (let d = new Date(ref); d <= limit; d.setMonth(d.getMonth() + 6)) push(new Date(d));
+      } else if (recurrence === 'annual') {
+        limit.setFullYear(limit.getFullYear() + 3);
+        for (let d = new Date(ref); d <= limit; d.setFullYear(d.getFullYear() + 1)) push(new Date(d));
+      }
+      return dates;
+    }
+    async function submitEvent() {
+      const title = document.getElementById('ev-title').value.trim();
+      if (!title) return;
+      const date = document.getElementById('ev-date').value;
+      const allDay = document.getElementById('ev-allday').checked;
+      const start = document.getElementById('ev-start').value;
+      const end = document.getElementById('ev-end').value;
+      const member = document.getElementById('ev-member').value;
+      const loc = document.getElementById('ev-location').value.trim();
+      const desc = document.getElementById('ev-description').value.trim();
+      const recurrence = document.getElementById('ev-recurrence').value;
+      const days = recurrence === 'weekly'
+        ? Array.from(document.querySelectorAll('.day-pill')).filter(b => b.dataset.sel === '1').map(btn => parseInt(btn.dataset.day))
+        : [];
 
-// ── Event detail & assignment ─────────────────────────────────────────────────
-let _detailEventId = null;
+      const dates = generateRecurringDates(date, recurrence, days);
+      if (!dates.length) { showToast('⚠️ Selecciona al menos un día'); return; }
 
-function openEventDetail(eventId) {
-  const ev = state.events.find(e => e.id === eventId);
-  if (!ev) return;
-  _detailEventId = eventId;
+      try {
+        for (const d of dates) {
+          const start_dt = allDay ? d : (start ? `${d}T${start}:00` : d);
+          const end_dt = allDay ? d : (end ? `${d}T${end}:00` : start_dt);
+          await api('POST', '/api/events', { title, start_dt, end_dt, all_day: allDay, member_id: member, location: loc || null, description: desc || null });
+        }
+        closeModal('modal-event');
+        await loadEvents();
+        render();
+        showToast(dates.length > 1 ? `📅 ${dates.length} eventos añadidos` : '📅 Evento añadido');
+      } catch { showToast('⚠️ Error al guardar'); }
+    }
 
-  document.getElementById('detail-title').textContent = ev.title;
+    // -- Tasks --
+    function toggleAddTaskForm() {
+      const form = document.getElementById('add-task-form');
+      if (!form) return;
+      form.classList.toggle('hidden');
+      if (!form.classList.contains('hidden')) {
+        if (state.currentMember) document.getElementById('task-member').value = state.currentMember.id;
+        document.getElementById('task-title').focus();
+      }
+    }
+    async function submitTask(e) {
+      e.preventDefault();
+      const title = document.getElementById('task-title').value.trim();
+      const member = document.getElementById('task-member').value;
+      const priority = document.getElementById('task-priority').value;
+      const due_date = document.getElementById('task-due').value || null;
+      if (!title) return;
+      try {
+        await api('POST', '/api/tasks', { title, member_id: member, priority, due_date });
+        document.getElementById('task-title').value = '';
+        document.getElementById('task-due').value = '';
+        await loadTasks();
+        render();
+        showToast('✅ Tarea añadida');
+      } catch { showToast('⚠️ Error al guardar'); }
+    }
+    async function toggleTask(id, completed) {
+      try {
+        await api('PATCH', `/api/tasks/${id}`, { completed: !!completed });
+        const t = state.tasks.find(t => t.id === id);
+        if (t) t.completed = completed;
+        // Re-render just the task row for speed
+        const row = document.getElementById('task-' + id);
+        if (row) {
+          const updated = state.tasks.find(t => t.id === id);
+          if (updated) { updated.completed = completed; row.outerHTML = renderTaskRow(updated); }
+        }
+      } catch { }
+    }
+    async function deleteTask(id) {
+      try {
+        await api('DELETE', `/api/tasks/${id}`);
+        state.tasks = state.tasks.filter(t => t.id !== id);
+        const row = document.getElementById('task-' + id);
+        if (row) row.remove();
+        showToast('🗑 Tarea eliminada');
+      } catch { }
+    }
 
-  const meta = [];
-  const dateStr = ev.all_day
-    ? ev.start_dt.slice(0, 10)
-    : `${ev.start_dt.slice(0, 10)} · ${ev.start_dt.slice(11, 16)}${ev.end_dt && ev.end_dt !== ev.start_dt ? '–' + ev.end_dt.slice(11, 16) : ''}`;
-  meta.push(`<span>📅 ${dateStr}</span>`);
-  if (ev.location) meta.push(`<span>📍 <a href="https://maps.google.com/?q=${encodeURIComponent(ev.location)}" target="_blank" style="color:inherit;text-decoration:underline">${escHtml(ev.location)}</a></span>`);
-  if (ev.description) meta.push(`<span>📝 ${escHtml(ev.description)}</span>`);
-  document.getElementById('detail-meta').innerHTML = meta.join('');
+    // ══════════════════════════════════════════════════════════════════════════════
+    // Utilities
+    // ══════════════════════════════════════════════════════════════════════════════
+    function getWeekMonday(date) {
+      const d = new Date(date); d.setHours(0, 0, 0, 0);
+      const day = d.getDay(); // 0=Sun
+      const diff = day === 0 ? -6 : 1 - day;
+      d.setDate(d.getDate() + diff);
+      return d;
+    }
+    function getWeekDays(date) {
+      const mon = getWeekMonday(date);
+      return Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return d; });
+    }
+    function fmtDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+    function fmtRelative(iso) {
+      const d = new Date(iso), now = new Date();
+      const diff = Math.floor((now - d) / 60000);
+      if (diff < 1) return 'ahora mismo';
+      if (diff < 60) return `hace ${diff}m`;
+      const h = Math.floor(diff / 60);
+      if (h < 24) return `hace ${h}h`;
+      return `hace ${Math.floor(h / 24)}d`;
+    }
+    function formatDue(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00'), now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const diff = Math.round((d - now) / 86400000);
+      if (diff === 0) return 'Hoy';
+      if (diff === 1) return 'Mañana';
+      if (diff === -1) return 'Ayer';
+      if (diff < 0) return `Hace ${-diff}d`;
+      if (diff < 7) return `En ${diff}d`;
+      return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    }
+    function colorBg(memberId) {
+      const map = { ale: 'var(--ale-bg)', miguel: 'var(--miguel-bg)', noa: 'var(--noa-bg)', oli: 'var(--oli-bg)', family: 'var(--family-bg)', birthday: '#2d1f06' };
+      return map[memberId] || 'var(--surface2)';
+    }
+    function escHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
 
-  const current = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
-  document.getElementById('detail-members').innerHTML = state.members.filter(m => !m.category).map(m => {
-    const checked = current.includes(m.id);
-    return `
+    // ── Theme ─────────────────────────────────────────────────────────────────────
+    function setTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      document.getElementById('theme-btn').textContent = t === 'dark' ? '🌙' : '☀️';
+      localStorage.setItem('theme', t);
+    }
+    function toggleTheme() {
+      setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+
+    // ── Event detail & assignment ─────────────────────────────────────────────────
+    let _detailEventId = null;
+
+    function openEventDetail(eventId) {
+      const ev = state.events.find(e => e.id === eventId);
+      if (!ev) return;
+      _detailEventId = eventId;
+
+      document.getElementById('detail-title').textContent = ev.title;
+
+      const meta = [];
+      const dateStr = ev.all_day
+        ? ev.start_dt.slice(0, 10)
+        : `${ev.start_dt.slice(0, 10)} · ${ev.start_dt.slice(11, 16)}${ev.end_dt && ev.end_dt !== ev.start_dt ? '–' + ev.end_dt.slice(11, 16) : ''}`;
+      meta.push(`<span>📅 ${dateStr}</span>`);
+      if (ev.location) meta.push(`<span>📍 <a href="https://maps.google.com/?q=${encodeURIComponent(ev.location)}" target="_blank" style="color:inherit;text-decoration:underline">${escHtml(ev.location)}</a></span>`);
+      if (ev.description) meta.push(`<span>📝 ${escHtml(ev.description)}</span>`);
+      document.getElementById('detail-meta').innerHTML = meta.join('');
+
+      const current = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+      document.getElementById('detail-members').innerHTML = state.members.filter(m => !m.category).map(m => {
+        const checked = current.includes(m.id);
+        return `
       <label class="member-cb-label${checked ? ' checked' : ''}" style="color:var(--${m.id})" id="cb-label-${m.id}">
         <input type="checkbox" value="${m.id}" ${checked ? 'checked' : ''}
           onchange="this.closest('label').classList.toggle('checked', this.checked)">
         ${m.emoji} ${m.name}
       </label>`;
-  }).join('');
+      }).join('');
 
-  document.getElementById('modal-event-detail').classList.remove('hidden');
-}
+      document.getElementById('modal-event-detail').classList.remove('hidden');
+    }
 
-async function deleteEventFromModal() {
-  if (!confirm('¿Eliminar este evento de la vista?')) return;
-  try {
-    await api('DELETE', `/api/events/${_detailEventId}`);
-    closeModal('modal-event-detail');
-    state.events = state.events.filter(e => e.id !== _detailEventId);
-    render();
-    showToast('🗑 Evento eliminado');
-  } catch { showToast('⚠️ Error al eliminar'); }
-}
+    async function deleteEventFromModal() {
+      if (!confirm('¿Eliminar este evento de la vista?')) return;
+      try {
+        await api('DELETE', `/api/events/${_detailEventId}`);
+        closeModal('modal-event-detail');
+        state.events = state.events.filter(e => e.id !== _detailEventId);
+        render();
+        showToast('🗑 Evento eliminado');
+      } catch { showToast('⚠️ Error al eliminar'); }
+    }
 
-async function saveEventAssignment() {
-  const checks = document.querySelectorAll('#detail-members input[type=checkbox]');
-  const member_ids = [...checks].filter(c => c.checked).map(c => c.value);
-  if (!member_ids.length) { showToast('⚠️ Selecciona al menos un miembro'); return; }
-  try {
-    await api('PUT', `/api/events/${_detailEventId}/assignments`, { member_ids });
-    closeModal('modal-event-detail');
-    await loadEvents();
-    render();
-    showToast('✅ Asignación guardada');
-  } catch { showToast('⚠️ Error al guardar'); }
-}
+    async function saveEventAssignment() {
+      const checks = document.querySelectorAll('#detail-members input[type=checkbox]');
+      const member_ids = [...checks].filter(c => c.checked).map(c => c.value);
+      if (!member_ids.length) { showToast('⚠️ Selecciona al menos un miembro'); return; }
+      try {
+        await api('PUT', `/api/events/${_detailEventId}/assignments`, { member_ids });
+        closeModal('modal-event-detail');
+        await loadEvents();
+        render();
+        showToast('✅ Asignación guardada');
+      } catch { showToast('⚠️ Error al guardar'); }
+    }
 
-// ── Settings ──────────────────────────────────────────────────────────────────
+    // ── Settings ──────────────────────────────────────────────────────────────────
 
-async function openSettings() {
-  const s = state.status;
-  const appleStatus = document.getElementById('settings-apple-status');
-  appleStatus.textContent = s.apple_configured ? 'Configurado' : 'No configurado';
-  appleStatus.className = 'settings-status' + (s.apple_configured ? ' connected' : '');
+    async function openSettings() {
+      const s = state.status;
+      const appleStatus = document.getElementById('settings-apple-status');
+      appleStatus.textContent = s.apple_configured ? 'Configurado' : 'No configurado';
+      appleStatus.className = 'settings-status' + (s.apple_configured ? ' connected' : '');
 
-  document.getElementById('ics-member').innerHTML = state.members.filter(m => !m.category)
-    .map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
+      document.getElementById('ics-member').innerHTML = state.members.filter(m => !m.category)
+        .map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
 
-  await Promise.all([fetchGoogleAccounts(), fetchSavedGoogleCals(), fetchIcsCalendars()]);
-  renderGoogleAccounts();
-  renderIcsCalendars();
-  document.getElementById('modal-settings').classList.remove('hidden');
-}
+      await Promise.all([fetchGoogleAccounts(), fetchSavedGoogleCals(), fetchIcsCalendars()]);
+      renderGoogleAccounts();
+      renderIcsCalendars();
+      document.getElementById('modal-settings').classList.remove('hidden');
+    }
 
-async function fetchGoogleAccounts() {
-  try {
-    const data = await api('GET', '/api/google/accounts');
-    googleAccounts = data.accounts || [];
-  } catch {}
-}
+    async function fetchGoogleAccounts() {
+      try {
+        const data = await api('GET', '/api/google/accounts');
+        googleAccounts = data.accounts || [];
+      } catch { }
+    }
 
-async function fetchSavedGoogleCals() {
-  try {
-    const data = await api('GET', '/api/google/saved-calendars');
-    savedGoogleCals = data.calendars || [];
-  } catch {}
-}
+    async function fetchSavedGoogleCals() {
+      try {
+        const data = await api('GET', '/api/google/saved-calendars');
+        savedGoogleCals = data.calendars || [];
+      } catch { }
+    }
 
-function renderGoogleAccounts() {
-  const container = document.getElementById('settings-google-accounts');
-  if (!googleAccounts.length) {
-    container.innerHTML = '<p class="settings-note">No hay cuentas Google conectadas.</p>';
-    return;
-  }
-  const memberOpts = state.members.filter(m => !m.category)
-    .map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
-  container.innerHTML = googleAccounts.map(account => {
-    const accountCals = savedGoogleCals.filter(c => c.account_id === account.id);
-    const calRows = accountCals.map(c => {
-      const m = state.members.find(x => x.id === c.member_id);
-      const tag = m ? `<span class="tag c-${m.id}" style="margin-left:6px">${m.emoji} ${m.name}</span>` : '';
-      return `
+    function renderGoogleAccounts() {
+      const container = document.getElementById('settings-google-accounts');
+      if (!googleAccounts.length) {
+        container.innerHTML = '<p class="settings-note">No hay cuentas Google conectadas.</p>';
+        return;
+      }
+      const memberOpts = state.members.filter(m => !m.category)
+        .map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
+      container.innerHTML = googleAccounts.map(account => {
+        const accountCals = savedGoogleCals.filter(c => c.account_id === account.id);
+        const calRows = accountCals.map(c => {
+          const m = state.members.find(x => x.id === c.member_id);
+          const tag = m ? `<span class="tag c-${m.id}" style="margin-left:6px">${m.emoji} ${m.name}</span>` : '';
+          return `
         <div class="settings-ics-item" style="padding-left:0">
           <div class="ics-info">
             <div class="ics-name">${escHtml(c.name)}${tag}</div>
           </div>
           <button class="task-del" style="opacity:1;flex-shrink:0" onclick="deleteGoogleCal('${c.id}')" title="Eliminar">✕</button>
         </div>`;
-    }).join('');
-    return `
+        }).join('');
+        return `
       <div class="settings-ics-item" style="flex-direction:column;align-items:stretch;padding-left:44px">
         <div style="display:flex;align-items:center;gap:8px">
           <span style="flex:1;font-weight:500">${escHtml(account.email)}</span>
@@ -1446,68 +2173,68 @@ function renderGoogleAccounts() {
           </div>
         </div>
       </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-async function showGcalPicker(accountId) {
-  const addDiv = document.getElementById(`gcal-add-${accountId}`);
-  addDiv.classList.remove('hidden');
-  const picker = document.getElementById(`gcal-picker-${accountId}`);
-  picker.innerHTML = '<option>Cargando...</option>';
-  try {
-    const data = await api('GET', `/api/google/calendars?account_id=${accountId}`);
-    const existing = new Set(savedGoogleCals.filter(c => c.account_id === accountId).map(c => c.calendar_id));
-    const opts = data.calendars.filter(c => !existing.has(c.id));
-    picker.innerHTML = opts.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
-    if (!opts.length) picker.innerHTML = '<option>No hay más calendarios disponibles</option>';
-  } catch { picker.innerHTML = '<option>Error al cargar</option>'; }
-}
+    async function showGcalPicker(accountId) {
+      const addDiv = document.getElementById(`gcal-add-${accountId}`);
+      addDiv.classList.remove('hidden');
+      const picker = document.getElementById(`gcal-picker-${accountId}`);
+      picker.innerHTML = '<option>Cargando...</option>';
+      try {
+        const data = await api('GET', `/api/google/calendars?account_id=${accountId}`);
+        const existing = new Set(savedGoogleCals.filter(c => c.account_id === accountId).map(c => c.calendar_id));
+        const opts = data.calendars.filter(c => !existing.has(c.id));
+        picker.innerHTML = opts.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
+        if (!opts.length) picker.innerHTML = '<option>No hay más calendarios disponibles</option>';
+      } catch { picker.innerHTML = '<option>Error al cargar</option>'; }
+    }
 
-function hideGcalPicker(accountId) {
-  document.getElementById(`gcal-add-${accountId}`).classList.add('hidden');
-}
+    function hideGcalPicker(accountId) {
+      document.getElementById(`gcal-add-${accountId}`).classList.add('hidden');
+    }
 
-async function submitAddGcal(accountId) {
-  const picker = document.getElementById(`gcal-picker-${accountId}`);
-  const calendar_id = picker.value;
-  const name = (picker.options[picker.selectedIndex] ? picker.options[picker.selectedIndex].text : null) || calendar_id;
-  const member_id = document.getElementById(`gcal-member-${accountId}`).value;
-  if (!calendar_id || calendar_id === 'Cargando...' || calendar_id === 'Error al cargar') return;
-  try {
-    await api('POST', '/api/google/saved-calendars', { calendar_id, name, member_id, account_id: accountId });
-    hideGcalPicker(accountId);
-    await fetchSavedGoogleCals();
-    renderGoogleAccounts();
-    showToast('✅ Calendario añadido');
-  } catch (e) { showToast('⚠️ Error: ' + (e.message || 'no se pudo añadir')); }
-}
+    async function submitAddGcal(accountId) {
+      const picker = document.getElementById(`gcal-picker-${accountId}`);
+      const calendar_id = picker.value;
+      const name = (picker.options[picker.selectedIndex] ? picker.options[picker.selectedIndex].text : null) || calendar_id;
+      const member_id = document.getElementById(`gcal-member-${accountId}`).value;
+      if (!calendar_id || calendar_id === 'Cargando...' || calendar_id === 'Error al cargar') return;
+      try {
+        await api('POST', '/api/google/saved-calendars', { calendar_id, name, member_id, account_id: accountId });
+        hideGcalPicker(accountId);
+        await fetchSavedGoogleCals();
+        renderGoogleAccounts();
+        showToast('✅ Calendario añadido');
+      } catch (e) { showToast('⚠️ Error: ' + (e.message || 'no se pudo añadir')); }
+    }
 
-async function deleteGoogleCal(id) {
-  if (!confirm('¿Eliminar este calendario?')) return;
-  try {
-    await api('DELETE', `/api/google/saved-calendars/${id}`);
-    await fetchSavedGoogleCals();
-    renderGoogleAccounts();
-  } catch { showToast('⚠️ Error al eliminar'); }
-}
+    async function deleteGoogleCal(id) {
+      if (!confirm('¿Eliminar este calendario?')) return;
+      try {
+        await api('DELETE', `/api/google/saved-calendars/${id}`);
+        await fetchSavedGoogleCals();
+        renderGoogleAccounts();
+      } catch { showToast('⚠️ Error al eliminar'); }
+    }
 
-async function fetchIcsCalendars() {
-  try {
-    const data = await api('GET', '/api/ics-calendars');
-    icsCalendars = data.calendars || [];
-  } catch {}
-}
+    async function fetchIcsCalendars() {
+      try {
+        const data = await api('GET', '/api/ics-calendars');
+        icsCalendars = data.calendars || [];
+      } catch { }
+    }
 
-function renderIcsCalendars() {
-  const container = document.getElementById('settings-ics-list');
-  if (!icsCalendars.length) {
-    container.innerHTML = '<p class="settings-note">No hay calendarios ICS añadidos.</p>';
-    return;
-  }
-  container.innerHTML = icsCalendars.map(c => {
-    const m = state.members.find(m => m.id === c.member_id);
-    const tag = m ? `<span class="tag c-${m.id}" style="margin-left:6px">${m.emoji} ${m.name}</span>` : '';
-    return `
+    function renderIcsCalendars() {
+      const container = document.getElementById('settings-ics-list');
+      if (!icsCalendars.length) {
+        container.innerHTML = '<p class="settings-note">No hay calendarios ICS añadidos.</p>';
+        return;
+      }
+      container.innerHTML = icsCalendars.map(c => {
+        const m = state.members.find(m => m.id === c.member_id);
+        const tag = m ? `<span class="tag c-${m.id}" style="margin-left:6px">${m.emoji} ${m.name}</span>` : '';
+        return `
       <div class="settings-ics-item">
         <div class="ics-info">
           <div class="ics-name">${escHtml(c.name)}${tag}</div>
@@ -1515,48 +2242,49 @@ function renderIcsCalendars() {
         </div>
         <button class="task-del" style="opacity:1;flex-shrink:0" onclick="deleteIcsCalendar('${c.id}')" title="Eliminar">✕</button>
       </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-function showAddIcs() { document.getElementById('settings-add-ics').classList.remove('hidden'); }
-function hideAddIcs() {
-  document.getElementById('settings-add-ics').classList.add('hidden');
-  document.getElementById('ics-name').value = '';
-  document.getElementById('ics-url').value = '';
-}
+    function showAddIcs() { document.getElementById('settings-add-ics').classList.remove('hidden'); }
+    function hideAddIcs() {
+      document.getElementById('settings-add-ics').classList.add('hidden');
+      document.getElementById('ics-name').value = '';
+      document.getElementById('ics-url').value = '';
+    }
 
-async function deleteIcsCalendar(id) {
-  if (!confirm('¿Eliminar este calendario?')) return;
-  try {
-    await api('DELETE', `/api/ics-calendars/${id}`);
-    await fetchIcsCalendars();
-    renderIcsCalendars();
-    renderStatusBanner();
-  } catch { showToast('⚠️ Error al eliminar'); }
-}
+    async function deleteIcsCalendar(id) {
+      if (!confirm('¿Eliminar este calendario?')) return;
+      try {
+        await api('DELETE', `/api/ics-calendars/${id}`);
+        await fetchIcsCalendars();
+        renderIcsCalendars();
+        renderStatusBanner();
+      } catch { showToast('⚠️ Error al eliminar'); }
+    }
 
-async function submitAddIcs() {
-  const name = document.getElementById('ics-name').value.trim();
-  const url  = document.getElementById('ics-url').value.trim();
-  const member_id = document.getElementById('ics-member').value;
-  if (!name || !url) { showToast('⚠️ Nombre y URL son obligatorios'); return; }
-  try {
-    await api('POST', '/api/ics-calendars', { name, url, member_id });
-    hideAddIcs();
-    await fetchIcsCalendars();
-    renderIcsCalendars();
-    renderStatusBanner();
-    showToast('✅ Calendario añadido');
-  } catch (e) { showToast('⚠️ Error: ' + (e.message || 'no se pudo añadir')); }
-}
+    async function submitAddIcs() {
+      const name = document.getElementById('ics-name').value.trim();
+      const url = document.getElementById('ics-url').value.trim();
+      const member_id = document.getElementById('ics-member').value;
+      if (!name || !url) { showToast('⚠️ Nombre y URL son obligatorios'); return; }
+      try {
+        await api('POST', '/api/ics-calendars', { name, url, member_id });
+        hideAddIcs();
+        await fetchIcsCalendars();
+        renderIcsCalendars();
+        renderStatusBanner();
+        showToast('✅ Calendario añadido');
+      } catch (e) { showToast('⚠️ Error: ' + (e.message || 'no se pudo añadir')); }
+    }
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.remove('hidden','fade');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => { el.classList.add('fade'); setTimeout(() => el.classList.add('hidden'), 300); }, 2500);
-}
-</script>
+    // ── Toast ─────────────────────────────────────────────────────────────────────
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.classList.remove('hidden', 'fade');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => { el.classList.add('fade'); setTimeout(() => el.classList.add('hidden'), 300); }, 2500);
+    }
+  </script>
 </body>
+
 </html>
