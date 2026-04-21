@@ -153,8 +153,8 @@ def sync_google_member(creds, member_id: str, cal_id: str, week_start: str, week
     try:
         result = service.events().list(
             calendarId=cal_id,
-            timeMin=week_start + "T00:00:00Z",
-            timeMax=week_end + "T00:00:00Z",
+            timeMin=week_start[:10] + "T00:00:00Z",
+            timeMax=week_end[:10] + "T00:00:00Z",
             singleEvents=True,
             orderBy="startTime",
             maxResults=250,
