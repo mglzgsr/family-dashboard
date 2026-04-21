@@ -422,6 +422,11 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .settings-add-ics input:focus, .settings-add-ics select:focus { border-color: #7C3AED; }
 
+/* ── View switcher ───────────────────────────────────────────────────────── */
+.view-switcher { display:flex; gap:2px; background:var(--surface2); border-radius:6px; padding:2px; }
+.view-switcher button { padding:4px 10px; border-radius:4px; font-size:12px; font-weight:600; color:var(--text-muted); background:none; border:none; cursor:pointer; }
+.view-switcher button.active { background:var(--surface); color:var(--text); }
+
 /* ── Scrollbar ───────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -610,6 +615,8 @@ let state = {
   members: [],
   currentMember: null,   // null = family view
   currentWeek: new Date(),
+  calView: 'week',       // 'day' | 'week' | 'month'
+  currentDay: new Date(),
   events: [],
   tasks: [],
   status: {},
@@ -688,12 +695,28 @@ async function loadStatus() {
 }
 
 async function loadEvents() {
-  const week = fmtDate(getWeekMonday(state.currentWeek));
   const member = (state.currentMember ? state.currentMember.id : null) || '';
-  const url = `/api/events?week=${week}${member ? '&member='+member : ''}`;
+  const memberQ = member ? '&member=' + member : '';
+
   try {
-    const data = await api('GET', url);
-    state.events = data.events || [];
+    if (state.calView === 'month') {
+      // Cargar las semanas que cubren el mes
+      const firstDay = new Date(state.currentDay.getFullYear(), state.currentDay.getMonth(), 1);
+      const lastDay = new Date(state.currentDay.getFullYear(), state.currentDay.getMonth() + 1, 0);
+      const weeks = [];
+      let d = getWeekMonday(firstDay);
+      while (d <= lastDay) {
+        weeks.push(fmtDate(new Date(d)));
+        d.setDate(d.getDate() + 7);
+      }
+      const results = await Promise.all(weeks.map(w => fetch(`/api/events?week=${w}${memberQ}`).then(r => r.json())));
+      const seen = new Set();
+      state.events = results.flatMap(r => r.events || []).filter(e => { if (seen.has(e.id)) return false; seen.add(e.id); return true; });
+    } else {
+      const week = fmtDate(getWeekMonday(state.calView === 'day' ? state.currentDay : state.currentWeek));
+      const data = await fetch(`/api/events?week=${week}${memberQ}`).then(r => r.json());
+      state.events = data.events || [];
+    }
   } catch { state.events = []; }
 }
 
@@ -815,8 +838,14 @@ function renderMemberPills() {
   }).join('');
 }
 
-// ── Calendar ─────────────────────────────────────────────────────────────────
+// ── Calendar dispatcher ───────────────────────────────────────────────────────
 function renderCalendar() {
+  if (state.calView === 'day') return renderDayView();
+  else if (state.calView === 'month') return renderMonthView();
+  else return renderWeekView();
+}
+
+function renderWeekView() {
   const days = getWeekDays(state.currentWeek);
   const today = new Date(); today.setHours(0,0,0,0);
   const first = days[0], last = days[6];
@@ -862,9 +891,139 @@ function renderCalendar() {
           <button class="icon-btn" onclick="changeWeek(1)">›</button>
         </div>
         <div class="cal-title">${weekLabel}</div>
+        <div class="view-switcher">
+          <button onclick="setCalView('day')" id="vbtn-day">Día</button>
+          <button onclick="setCalView('week')" id="vbtn-week" class="active">Semana</button>
+          <button onclick="setCalView('month')" id="vbtn-month">Mes</button>
+        </div>
       </div>
       <div class="week-grid">${cols}</div>
     </div>`;
+}
+
+function renderDayView() {
+  const d = state.currentDay;
+  const dayStr = fmtDate(d);
+  const dayEvents = state.events.filter(e => (e.start_dt || '').startsWith(dayStr));
+  const dayName = d.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
+
+  const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const monday = getWeekMonday(d);
+  const dayNav = Array.from({length:7}, (_,i) => {
+    const dd = new Date(monday); dd.setDate(monday.getDate() + i);
+    const ds = fmtDate(dd);
+    const isToday = ds === fmtDate(new Date());
+    const isSel = ds === dayStr;
+    return `<button onclick="selectDay('${ds}')" style="flex:1;padding:6px 4px;border-radius:8px;border:none;cursor:pointer;background:${isSel?'#7C3AED':isToday?'rgba(124,58,237,.15)':'transparent'};color:${isSel?'#fff':'var(--text)'};font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <span style="font-size:10px;color:${isSel?'rgba(255,255,255,.7)':'var(--text-muted)'};">${DAY_NAMES[dd.getDay()]}</span>
+      <span>${dd.getDate()}</span>
+    </button>`;
+  }).join('');
+
+  const evList = dayEvents.length
+    ? dayEvents.sort((a,b) => a.start_dt.localeCompare(b.start_dt)).map(ev => {
+        const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+        const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
+        const time = ev.all_day ? 'Todo el día' : ev.start_dt.slice(11,16);
+        return `<div class="event-chip ${colorClass}" style="padding:10px 12px;margin-bottom:6px;white-space:normal;cursor:pointer;font-size:13px;" onclick="openEventDetail('${ev.id}')">
+          <div style="font-size:11px;opacity:.6;margin-bottom:2px;">${time}</div>
+          <div>${escHtml(ev.title)}</div>
+          ${ev.location ? `<div style="font-size:11px;opacity:.6;margin-top:2px;">📍 ${escHtml(ev.location)}</div>` : ''}
+        </div>`;
+      }).join('')
+    : '<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin eventos</p>';
+
+  return `
+    <div class="calendar-card">
+      <div class="cal-header">
+        <button class="icon-btn" onclick="navDay(-1)">‹</button>
+        <button class="btn btn-ghost btn-sm" onclick="goToday()">Hoy</button>
+        <button class="icon-btn" onclick="navDay(1)">›</button>
+        <span class="cal-title" style="text-transform:capitalize;">${dayName}</span>
+        <div class="view-switcher">
+          <button onclick="setCalView('day')" id="vbtn-day" class="active">Día</button>
+          <button onclick="setCalView('week')" id="vbtn-week">Semana</button>
+          <button onclick="setCalView('month')" id="vbtn-month">Mes</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;padding:10px 14px;border-bottom:1px solid var(--border);">${dayNav}</div>
+      <div style="padding:12px 14px;">${evList}</div>
+    </div>`;
+}
+
+function selectDay(dateStr) {
+  state.currentDay = new Date(dateStr + 'T00:00:00');
+  render();
+}
+
+function navDay(dir) {
+  state.currentDay.setDate(state.currentDay.getDate() + dir);
+  state.currentWeek = getWeekMonday(state.currentDay);
+  loadEvents().then(render);
+}
+
+function renderMonthView() {
+  const year = state.currentDay.getFullYear();
+  const month = state.currentDay.getMonth();
+  const monthName = state.currentDay.toLocaleDateString('es-ES', { month:'long', year:'numeric' });
+
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startCell = getWeekMonday(firstDay);
+
+  const todayStr = fmtDate(new Date());
+
+  const dayHeaders = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const headers = dayHeaders.map(d => `<div style="text-align:center;font-size:11px;font-weight:600;color:var(--text-muted);padding:6px 0;">${d}</div>`).join('');
+
+  const cells = [];
+  const d = new Date(startCell);
+  while (d <= lastDay || cells.length % 7 !== 0) {
+    const ds = fmtDate(d);
+    const isCurrentMonth = d.getMonth() === month;
+    const isToday = ds === todayStr;
+    const dayEvents = state.events.filter(e => (e.start_dt || '').startsWith(ds));
+
+    const evChips = dayEvents.slice(0,3).map(ev => {
+      const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+      const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
+      return `<div class="event-chip ${colorClass}" style="font-size:10px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}">${escHtml(ev.title)}</div>`;
+    }).join('');
+    const more = dayEvents.length > 3 ? `<div style="font-size:10px;color:var(--text-muted);padding:1px 4px;">+${dayEvents.length-3} más</div>` : '';
+
+    cells.push(`
+      <div style="border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:80px;padding:4px;opacity:${isCurrentMonth?1:.35};background:${isToday?'rgba(124,58,237,.08)':'transparent'};cursor:pointer;" onclick="selectDay('${ds}');setCalView('day')">
+        <div style="font-size:12px;font-weight:${isToday?700:500};color:${isToday?'#7C3AED':'var(--text)'};margin-bottom:3px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:${isToday?'rgba(124,58,237,.15)':'transparent'};">${d.getDate()}</div>
+        ${evChips}${more}
+      </div>
+    `);
+    d.setDate(d.getDate() + 1);
+    if (cells.length > 42) break;
+  }
+
+  return `
+    <div class="calendar-card">
+      <div class="cal-header">
+        <button class="icon-btn" onclick="navMonth(-1)">‹</button>
+        <button class="btn btn-ghost btn-sm" onclick="goToday()">Hoy</button>
+        <button class="icon-btn" onclick="navMonth(1)">›</button>
+        <span class="cal-title" style="text-transform:capitalize;">${monthName}</span>
+        <div class="view-switcher">
+          <button onclick="setCalView('day')" id="vbtn-day">Día</button>
+          <button onclick="setCalView('week')" id="vbtn-week">Semana</button>
+          <button onclick="setCalView('month')" id="vbtn-month" class="active">Mes</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-left:1px solid var(--border);border-top:1px solid var(--border);">
+        ${headers}
+        ${cells.join('')}
+      </div>
+    </div>`;
+}
+
+function navMonth(dir) {
+  state.currentDay.setMonth(state.currentDay.getMonth() + dir);
+  loadEvents().then(render);
 }
 
 // ── Task panel ────────────────────────────────────────────────────────────────
@@ -936,13 +1095,24 @@ function renderTaskRow(t) {
 // Actions
 // ══════════════════════════════════════════════════════════════════════════════
 
+// -- View switcher --
+function setCalView(view) {
+  state.calView = view;
+  document.querySelectorAll('.view-switcher button').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('vbtn-' + view);
+  if (btn) btn.classList.add('active');
+  loadEvents().then(render);
+}
+
 // -- Week navigation --
 function changeWeek(delta) {
   state.currentWeek = new Date(state.currentWeek.getTime() + delta * 7 * 86400000);
   loadEvents().then(render);
 }
 function goToday() {
-  state.currentWeek = new Date();
+  const today = new Date();
+  state.currentWeek = getWeekMonday(today);
+  state.currentDay = today;
   loadEvents().then(render);
 }
 
