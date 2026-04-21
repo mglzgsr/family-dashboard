@@ -128,7 +128,7 @@ async def api_status():
             {"id": "noa",      "name": "Noa",        "color": "#059669", "emoji": "🧒", "adult": False, "image": "/static/assets/noa.jpg", "category": False},
             {"id": "oli",      "name": "Oli",        "color": "#D97706", "emoji": "👧", "adult": False, "image": "/static/assets/oli.jpg", "category": False},
             {"id": "family",   "name": "Familia",    "color": "#DB2777", "emoji": "🏠", "adult": False, "image": "/static/assets/family.jpg", "category": False},
-            {"id": "birthday", "name": "Cumpleaños", "color": "#B45309", "emoji": "🎂", "adult": False, "image": "/static/assets/birthday.jpg", "category": True},
+            {"id": "birthday", "name": "Cumpleaños", "color": "#B45309", "emoji": "🎂", "adult": False, "category": True},
         ],
     }
 
