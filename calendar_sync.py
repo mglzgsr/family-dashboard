@@ -21,6 +21,9 @@ from datetime import datetime, timezone, timedelta
 
 import database
 
+# Allow Google to return extra scopes (e.g. openid) without raising an error
+os.environ["OAUTHLIB_RELAX_TOKEN_SCOPE"] = "1"
+
 logger = logging.getLogger(__name__)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -89,7 +92,7 @@ def refresh_google_token(creds, account_id: str | None = None):
     """Refresh token if expired and persist the updated token."""
     from google.auth.transport.requests import Request
 
-    if creds.expired and creds.refresh_token:
+    if (creds.expired or creds.expiry is None) and creds.refresh_token:
         creds.refresh(Request())
         token_json = json.dumps({"token": creds.token, "refresh_token": creds.refresh_token})
         if account_id:
