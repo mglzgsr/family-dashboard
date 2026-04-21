@@ -336,6 +336,46 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 }
 .toast.fade { opacity: 0; }
 
+/* ── Settings modal ─────────────────────────────────────────────────────── */
+.settings-section {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-section:last-child { border-bottom: none; }
+.settings-section-head {
+  display: flex; align-items: center; gap: 12px;
+}
+.settings-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.settings-section-title { flex: 1; }
+.settings-section-title strong { display: block; font-size: 13px; font-weight: 600; }
+.settings-status { font-size: 12px; color: var(--text-muted); }
+.settings-status.connected { color: #34d399; }
+.settings-note { font-size: 12px; color: var(--text-dim); margin-top: 8px; padding-left: 44px; }
+.settings-ics-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0 0 44px; font-size: 13px;
+}
+.settings-ics-item .ics-info { flex: 1; min-width: 0; }
+.settings-ics-item .ics-name { font-weight: 500; }
+.settings-ics-item .ics-url { font-size: 11px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings-add-ics {
+  padding: 12px 0 0 44px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.settings-add-ics.hidden { display: none; }
+.settings-add-ics input, .settings-add-ics select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  padding: 8px 10px; font: inherit; font-size: 13px; outline: none;
+  transition: border-color .15s;
+}
+.settings-add-ics input:focus, .settings-add-ics select:focus { border-color: #7C3AED; }
+
 /* ── Scrollbar ───────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -355,6 +395,11 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
     <!-- rendered by JS -->
   </nav>
   <div class="header-right">
+    <button class="icon-btn" onclick="openSettings()" title="Ajustes de calendarios">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
     <button class="icon-btn" id="sync-btn" onclick="triggerSync()" title="Sincronizar calendarios">
       <svg id="sync-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
@@ -399,6 +444,61 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   </div>
 </div>
 
+<!-- ── Settings modal ──────────────────────────────────────────────────────── -->
+<div class="modal-overlay hidden" id="modal-settings">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-head">
+      <h3>Ajustes de calendarios</h3>
+      <button class="icon-btn" onclick="closeModal('modal-settings')">✕</button>
+    </div>
+    <div style="padding:0">
+
+      <div class="settings-section">
+        <div class="settings-section-head">
+          <div class="settings-icon">G</div>
+          <div class="settings-section-title">
+            <strong>Google Calendar</strong>
+            <span id="settings-google-status" class="settings-status"></span>
+          </div>
+          <div id="settings-google-action"></div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-head">
+          <div class="settings-icon"></div>
+          <div class="settings-section-title">
+            <strong>Apple Calendar</strong>
+            <span id="settings-apple-status" class="settings-status"></span>
+          </div>
+        </div>
+        <p class="settings-note">Configurado via .env (APPLE_ID + APPLE_APP_PASSWORD)</p>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-head">
+          <div class="settings-icon">📅</div>
+          <div class="settings-section-title">
+            <strong>Calendarios ICS</strong>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="showAddIcs()">+ Añadir</button>
+        </div>
+        <div id="settings-ics-list"></div>
+        <div class="settings-add-ics hidden" id="settings-add-ics">
+          <input id="ics-name" type="text" placeholder="Nombre (ej: Colegio de Noa)">
+          <select id="ics-member"></select>
+          <input id="ics-url" type="text" placeholder="URL (webcal:// o https://)">
+          <div class="field-group">
+            <button class="btn btn-ghost" onclick="hideAddIcs()">Cancelar</button>
+            <button class="btn btn-primary" onclick="submitAddIcs()">Guardar</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- ── Toast ────────────────────────────────────────────────────────────────── -->
 <div class="toast hidden" id="toast"></div>
 
@@ -414,6 +514,7 @@ let state = {
   tasks: [],
   status: {},
 };
+let icsCalendars = [];
 
 const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -433,6 +534,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Load status & members
   await loadStatus();
+  await fetchIcsCalendars();
   renderMemberPills();
 
   // Parse route
@@ -563,20 +665,22 @@ function renderMemberView() {
 function renderStatusBanner() {
   const el = document.getElementById('status-banner');
   const s = state.status;
-  if (!s.google_connected && !s.apple_configured) {
+  const hasAny = s.google_connected || s.apple_configured || icsCalendars.length > 0;
+  if (!hasAny) {
     el.innerHTML = `
       <div class="banner banner-warn">
         <span>📅</span>
         <div class="b-msg">
           <strong>Calendarios no conectados</strong>
-          Conecta Google Calendar para ver los eventos automáticamente
+          Conecta Google, Apple o añade un enlace ICS desde los ajustes
         </div>
-        <a href="/auth/google" class="btn btn-ghost btn-sm">Conectar Google</a>
+        <button class="btn btn-ghost btn-sm" onclick="openSettings()">Ajustes</button>
       </div>`;
   } else {
     const parts = [];
     if (s.google_connected) parts.push('Google ✓');
     if (s.apple_configured) parts.push('Apple ✓');
+    if (icsCalendars.length) parts.push(`ICS (${icsCalendars.length})`);
     const lastSync = s.last_sync ? 'Última sync: ' + fmtRelative(s.last_sync) : 'Sin sincronizar aún';
     el.innerHTML = `
       <div class="banner banner-ok" style="margin-bottom:0">
@@ -585,9 +689,6 @@ function renderStatusBanner() {
           <strong>${parts.join(' · ')}</strong>
           ${lastSync}
         </div>
-        ${s.google_connected
-          ? `<a href="/auth/google/disconnect" class="btn btn-ghost btn-sm" onclick="return confirm('¿Desconectar Google Calendar?')">Desconectar</a>`
-          : `<a href="/auth/google" class="btn btn-ghost btn-sm">Conectar Google</a>`}
       </div>`;
   }
 }
@@ -882,6 +983,91 @@ function setTheme(t) {
 }
 function toggleTheme() {
   setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+async function openSettings() {
+  const s = state.status;
+  const googleStatus = document.getElementById('settings-google-status');
+  const googleAction = document.getElementById('settings-google-action');
+  if (s.google_connected) {
+    googleStatus.textContent = 'Conectado';
+    googleStatus.className = 'settings-status connected';
+    googleAction.innerHTML = `<a href="/auth/google/disconnect" class="btn btn-ghost btn-sm" onclick="return confirm('¿Desconectar Google Calendar?')">Desconectar</a>`;
+  } else {
+    googleStatus.textContent = 'No conectado';
+    googleStatus.className = 'settings-status';
+    googleAction.innerHTML = `<a href="/auth/google" class="btn btn-primary btn-sm">Conectar</a>`;
+  }
+  const appleStatus = document.getElementById('settings-apple-status');
+  appleStatus.textContent = s.apple_configured ? 'Configurado' : 'No configurado';
+  appleStatus.className = 'settings-status' + (s.apple_configured ? ' connected' : '');
+
+  const sel = document.getElementById('ics-member');
+  sel.innerHTML = state.members.map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
+
+  await fetchIcsCalendars();
+  renderIcsCalendars();
+  document.getElementById('modal-settings').classList.remove('hidden');
+}
+
+async function fetchIcsCalendars() {
+  try {
+    const data = await api('GET', '/api/ics-calendars');
+    icsCalendars = data.calendars || [];
+  } catch {}
+}
+
+function renderIcsCalendars() {
+  const container = document.getElementById('settings-ics-list');
+  if (!icsCalendars.length) {
+    container.innerHTML = '<p class="settings-note">No hay calendarios ICS añadidos.</p>';
+    return;
+  }
+  container.innerHTML = icsCalendars.map(c => {
+    const m = state.members.find(m => m.id === c.member_id);
+    const tag = m ? `<span class="tag c-${m.id}" style="margin-left:6px">${m.emoji} ${m.name}</span>` : '';
+    return `
+      <div class="settings-ics-item">
+        <div class="ics-info">
+          <div class="ics-name">${escHtml(c.name)}${tag}</div>
+          <div class="ics-url">${escHtml(c.url)}</div>
+        </div>
+        <button class="task-del" style="opacity:1;flex-shrink:0" onclick="deleteIcsCalendar('${c.id}')" title="Eliminar">✕</button>
+      </div>`;
+  }).join('');
+}
+
+function showAddIcs() { document.getElementById('settings-add-ics').classList.remove('hidden'); }
+function hideAddIcs() {
+  document.getElementById('settings-add-ics').classList.add('hidden');
+  document.getElementById('ics-name').value = '';
+  document.getElementById('ics-url').value = '';
+}
+
+async function deleteIcsCalendar(id) {
+  if (!confirm('¿Eliminar este calendario?')) return;
+  try {
+    await api('DELETE', `/api/ics-calendars/${id}`);
+    await fetchIcsCalendars();
+    renderIcsCalendars();
+    renderStatusBanner();
+  } catch { showToast('⚠️ Error al eliminar'); }
+}
+
+async function submitAddIcs() {
+  const name = document.getElementById('ics-name').value.trim();
+  const url  = document.getElementById('ics-url').value.trim();
+  const member_id = document.getElementById('ics-member').value;
+  if (!name || !url) { showToast('⚠️ Nombre y URL son obligatorios'); return; }
+  try {
+    await api('POST', '/api/ics-calendars', { name, url, member_id });
+    hideAddIcs();
+    await fetchIcsCalendars();
+    renderIcsCalendars();
+    renderStatusBanner();
+    showToast('✅ Calendario añadido');
+  } catch { showToast('⚠️ Error al añadir el calendario'); }
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────────────

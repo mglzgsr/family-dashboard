@@ -241,3 +241,30 @@ async def api_update_task(task_id: str, body: TaskUpdate):
 async def api_delete_task(task_id: str):
     database.delete_task(task_id)
     return {"ok": True}
+
+
+# ── API: ICS Calendars ────────────────────────────────────────────────────────
+
+class IcsCalendarCreate(BaseModel):
+    name: str
+    url: str
+    member_id: str
+
+
+@app.get("/api/ics-calendars")
+async def api_get_ics_calendars():
+    return {"calendars": database.get_ics_calendars()}
+
+
+@app.post("/api/ics-calendars", status_code=201)
+async def api_create_ics_calendar(body: IcsCalendarCreate, background_tasks: BackgroundTasks):
+    cal = {"id": str(uuid.uuid4()), "name": body.name, "url": body.url, "member_id": body.member_id}
+    database.create_ics_calendar(cal)
+    background_tasks.add_task(calendar_sync.sync_all)
+    return {"calendar": cal}
+
+
+@app.delete("/api/ics-calendars/{cal_id}")
+async def api_delete_ics_calendar(cal_id: str):
+    database.delete_ics_calendar(cal_id)
+    return {"ok": True}

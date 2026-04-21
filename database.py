@@ -58,6 +58,14 @@ def init_db():
                 value      TEXT,
                 updated_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
+
+            CREATE TABLE IF NOT EXISTS ics_calendars (
+                id         TEXT PRIMARY KEY,
+                name       TEXT NOT NULL,
+                url        TEXT NOT NULL,
+                member_id  TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            );
         """)
 
 
@@ -164,6 +172,27 @@ def update_task(task_id: str, updates: dict):
 def delete_task(task_id: str):
     with get_conn() as conn:
         conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+
+
+# ── ICS Calendars ─────────────────────────────────────────────────────────────
+
+def get_ics_calendars() -> list[dict]:
+    with get_conn() as conn:
+        rows = conn.execute("SELECT * FROM ics_calendars ORDER BY created_at").fetchall()
+        return [dict(r) for r in rows]
+
+
+def create_ics_calendar(c: dict):
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO ics_calendars (id, name, url, member_id) VALUES (:id, :name, :url, :member_id)",
+            c,
+        )
+
+
+def delete_ics_calendar(cal_id: str):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM ics_calendars WHERE id = ?", (cal_id,))
 
 
 # ── Settings ──────────────────────────────────────────────────────────────────

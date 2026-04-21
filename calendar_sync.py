@@ -39,6 +39,11 @@ APPLE_CALENDAR_NAMES: dict[str, list[str]] = {
     for m in MEMBERS
 }
 
+ICS_URLS: dict[str, list[str]] = {
+    m: [u.strip() for u in os.getenv(f"ICS_URL_{m.upper()}", "").split(",") if u.strip()]
+    for m in MEMBERS
+}
+
 
 def week_range(ref: datetime) -> tuple[str, str]:
     """Returns (monday_iso, next_monday_iso) for the week containing ref."""
@@ -302,6 +307,82 @@ def sync_apple(week_start: str, week_end: str) -> dict:
     return {"status": "ok", "events_synced": total}
 
 
+# ── ICS / webcal URLs ─────────────────────────────────────────────────────────
+
+def sync_ics(week_start: str, week_end: str) -> dict:
+    try:
+        from icalendar import Calendar as ICalendar
+        import httpx
+    except ImportError:
+        return {"status": "icalendar_not_installed"}
+
+    feeds = database.get_ics_calendars()
+    if not feeds:
+        return {"status": "no_calendars"}
+
+    start_dt = datetime.fromisoformat(week_start)
+    end_dt = datetime.fromisoformat(week_end)
+
+    total = 0
+    for feed in feeds:
+        member_id = feed["member_id"]
+        url = feed["url"]
+        fetch_url = url.replace("webcal://", "https://").replace("webcal:", "https:")
+        try:
+            response = httpx.get(fetch_url, follow_redirects=True, timeout=30)
+            response.raise_for_status()
+            cal = ICalendar.from_ical(response.content)
+        except Exception as exc:
+            logger.warning("ICS error for %s (%s): %s", member_id, url, exc)
+            continue
+
+        database.delete_synced_events_for_member(member_id, "ics", week_start, week_end)
+
+        for component in cal.walk():
+            if component.name != "VEVENT":
+                continue
+            try:
+                dtstart = component.get("DTSTART").dt
+                dtend_prop = component.get("DTEND")
+                dtend = dtend_prop.dt if dtend_prop else dtstart
+
+                all_day = not isinstance(dtstart, datetime)
+                if all_day:
+                    ev_start = datetime(dtstart.year, dtstart.month, dtstart.day)
+                    ev_end = datetime(dtend.year, dtend.month, dtend.day)
+                else:
+                    ev_start = dtstart.replace(tzinfo=None) if dtstart.tzinfo else dtstart
+                    ev_end = dtend.replace(tzinfo=None) if dtend.tzinfo else dtend
+
+                if ev_end < start_dt or ev_start >= end_dt:
+                    continue
+
+                uid = str(component.get("UID") or _new_id())
+                summary = str(component.get("SUMMARY") or "(sin título)")
+                location = str(component.get("LOCATION") or "") or None
+                description = str(component.get("DESCRIPTION") or "") or None
+                start_str = ev_start.isoformat()[:10] if all_day else ev_start.isoformat()[:19]
+                end_str = ev_end.isoformat()[:10] if all_day else ev_end.isoformat()[:19]
+
+                database.upsert_event({
+                    "id": f"ics-{uid}",
+                    "title": summary,
+                    "start_dt": start_str,
+                    "end_dt": end_str,
+                    "all_day": int(all_day),
+                    "member_id": member_id,
+                    "source": "ics",
+                    "description": description,
+                    "location": location,
+                    "external_id": uid,
+                })
+                total += 1
+            except Exception as exc:
+                logger.debug("Skipping malformed ICS event: %s", exc)
+
+    return {"status": "ok", "events_synced": total}
+
+
 # ── Main sync entry point ─────────────────────────────────────────────────────
 
 async def sync_all(weeks_ahead: int = 3) -> dict:
@@ -317,7 +398,8 @@ async def sync_all(weeks_ahead: int = 3) -> dict:
         week_start, week_end = week_range(ref)
         g = sync_google(week_start, week_end)
         a = sync_apple(week_start, week_end)
-        results.append({"week": week_start[:10], "google": g, "apple": a})
+        i = sync_ics(week_start, week_end)
+        results.append({"week": week_start[:10], "google": g, "apple": a, "ics": i})
 
     database.set_setting("last_sync", datetime.now().isoformat())
     return {"synced_weeks": results}
