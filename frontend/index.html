@@ -939,7 +939,7 @@ function openAddEventOn(dateStr) {
   document.getElementById('ev-end').disabled = false;
   document.getElementById('ev-recurrence').value = 'none';
   document.getElementById('ev-days-row').classList.add('hidden');
-  document.querySelectorAll('.day-pill').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.day-pill').forEach(btn => { btn.dataset.sel = '0'; btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; });
   document.getElementById('modal-event').classList.remove('hidden');
   setTimeout(() => document.getElementById('ev-title').focus(), 50);
 }
@@ -956,7 +956,13 @@ function toggleRecurrence() {
   else { row.classList.add('hidden'); }
 }
 document.querySelectorAll('.day-pill').forEach(btn => {
-  btn.addEventListener('click', () => btn.classList.toggle('active'));
+  btn.addEventListener('click', () => {
+    const on = btn.dataset.sel === '1';
+    btn.dataset.sel = on ? '0' : '1';
+    btn.style.background  = on ? '' : 'var(--accent)';
+    btn.style.color       = on ? '' : '#fff';
+    btn.style.borderColor = on ? '' : 'var(--accent)';
+  });
 });
 function generateRecurringDates(startDate, recurrence, days) {
   const ref = new Date(startDate + 'T00:00:00');
@@ -994,7 +1000,7 @@ async function submitEvent() {
   const desc       = document.getElementById('ev-description').value.trim();
   const recurrence = document.getElementById('ev-recurrence').value;
   const days       = recurrence === 'weekly'
-    ? Array.from(document.querySelectorAll('.day-pill.active')).map(btn => parseInt(btn.dataset.day))
+    ? Array.from(document.querySelectorAll('.day-pill')).filter(b => b.dataset.sel === '1').map(btn => parseInt(btn.dataset.day))
     : [];
 
   const dates = generateRecurringDates(date, recurrence, days);
