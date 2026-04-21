@@ -503,6 +503,15 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
           </div>
           <div id="settings-google-action"></div>
         </div>
+        <div id="settings-google-cals"></div>
+        <div class="settings-add-ics hidden" id="settings-google-add">
+          <select id="gcal-picker"><option>Cargando...</option></select>
+          <select id="gcal-member"></select>
+          <div class="field-group">
+            <button class="btn btn-ghost" onclick="hideAddGcal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="submitAddGcal()">Añadir</button>
+          </div>
+        </div>
       </div>
 
       <div class="settings-section">
@@ -1097,6 +1106,8 @@ async function saveEventAssignment() {
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────
+let savedGoogleCals = [];
+
 async function openSettings() {
   const s = state.status;
   const googleStatus = document.getElementById('settings-google-status');
@@ -1114,12 +1125,87 @@ async function openSettings() {
   appleStatus.textContent = s.apple_configured ? 'Configurado' : 'No configurado';
   appleStatus.className = 'settings-status' + (s.apple_configured ? ' connected' : '');
 
-  const sel = document.getElementById('ics-member');
-  sel.innerHTML = state.members.map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
+  const memberOpts = state.members.filter(m => !m.category)
+    .map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('');
+  document.getElementById('ics-member').innerHTML = memberOpts;
+  document.getElementById('gcal-member').innerHTML = memberOpts;
 
-  await fetchIcsCalendars();
+  await Promise.all([fetchSavedGoogleCals(), fetchIcsCalendars()]);
+  renderSavedGoogleCals();
   renderIcsCalendars();
   document.getElementById('modal-settings').classList.remove('hidden');
+}
+
+async function fetchSavedGoogleCals() {
+  try {
+    const data = await api('GET', '/api/google/saved-calendars');
+    savedGoogleCals = data.calendars || [];
+  } catch {}
+}
+
+function renderSavedGoogleCals() {
+  const container = document.getElementById('settings-google-cals');
+  if (!savedGoogleCals.length) {
+    container.innerHTML = state.status.google_connected
+      ? '<p class="settings-note">No hay calendarios seleccionados. <button class="btn btn-ghost btn-sm" style="margin-left:4px" onclick="showAddGcal()">+ Añadir</button></p>'
+      : '';
+    return;
+  }
+  container.innerHTML = savedGoogleCals.map(c => {
+    const m = state.members.find(x => x.id === c.member_id);
+    const tag = m ? `<span class="tag c-${m.id}" style="margin-left:6px">${m.emoji} ${m.name}</span>` : '';
+    return `
+      <div class="settings-ics-item">
+        <div class="ics-info">
+          <div class="ics-name">${escHtml(c.name)}${tag}</div>
+        </div>
+        <button class="task-del" style="opacity:1;flex-shrink:0" onclick="deleteGoogleCal('${c.id}')" title="Eliminar">✕</button>
+      </div>`;
+  }).join('') + (state.status.google_connected
+    ? '<p class="settings-note" style="padding-top:8px"><button class="btn btn-ghost btn-sm" onclick="showAddGcal()">+ Añadir calendario</button></p>'
+    : '');
+}
+
+async function showAddGcal() {
+  const addDiv = document.getElementById('settings-google-add');
+  addDiv.classList.remove('hidden');
+  const picker = document.getElementById('gcal-picker');
+  picker.innerHTML = '<option>Cargando...</option>';
+  try {
+    const data = await api('GET', '/api/google/calendars');
+    const existing = new Set(savedGoogleCals.map(c => c.calendar_id));
+    const opts = data.calendars.filter(c => !existing.has(c.id));
+    picker.innerHTML = opts.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
+    if (!opts.length) picker.innerHTML = '<option>No hay más calendarios disponibles</option>';
+  } catch { picker.innerHTML = '<option>Error al cargar</option>'; }
+}
+
+function hideAddGcal() {
+  document.getElementById('settings-google-add').classList.add('hidden');
+}
+
+async function submitAddGcal() {
+  const picker = document.getElementById('gcal-picker');
+  const calendar_id = picker.value;
+  const name = picker.options[picker.selectedIndex]?.text || calendar_id;
+  const member_id = document.getElementById('gcal-member').value;
+  if (!calendar_id || calendar_id === 'Cargando...' || calendar_id === 'Error al cargar') return;
+  try {
+    await api('POST', '/api/google/saved-calendars', { calendar_id, name, member_id });
+    hideAddGcal();
+    await fetchSavedGoogleCals();
+    renderSavedGoogleCals();
+    showToast('✅ Calendario añadido');
+  } catch (e) { showToast('⚠️ Error: ' + (e.message || 'no se pudo añadir')); }
+}
+
+async function deleteGoogleCal(id) {
+  if (!confirm('¿Eliminar este calendario?')) return;
+  try {
+    await api('DELETE', `/api/google/saved-calendars/${id}`);
+    await fetchSavedGoogleCals();
+    renderSavedGoogleCals();
+  } catch { showToast('⚠️ Error al eliminar'); }
 }
 
 async function fetchIcsCalendars() {

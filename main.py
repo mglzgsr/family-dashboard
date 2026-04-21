@@ -254,6 +254,52 @@ async def api_delete_task(task_id: str):
     return {"ok": True}
 
 
+# ── API: Google Calendars (discovery + DB) ───────────────────────────────────
+
+@app.get("/api/google/calendars")
+async def api_list_google_calendars():
+    from googleapiclient.discovery import build
+    creds = calendar_sync.build_google_credentials()
+    if not creds:
+        raise HTTPException(401, "Google no conectado")
+    try:
+        creds = calendar_sync.refresh_google_token(creds)
+        service = build("calendar", "v3", credentials=creds, cache_discovery=False)
+        result = service.calendarList().list().execute()
+        calendars = [
+            {"id": c["id"], "name": c.get("summary", c["id"])}
+            for c in result.get("items", [])
+        ]
+        return {"calendars": calendars}
+    except Exception as exc:
+        raise HTTPException(500, str(exc))
+
+
+class GoogleCalendarSave(BaseModel):
+    calendar_id: str
+    name: str
+    member_id: str
+
+
+@app.get("/api/google/saved-calendars")
+async def api_get_saved_google_calendars():
+    return {"calendars": database.get_google_calendars()}
+
+
+@app.post("/api/google/saved-calendars", status_code=201)
+async def api_save_google_calendar(body: GoogleCalendarSave, background_tasks: BackgroundTasks):
+    cal = {"id": str(uuid.uuid4()), "calendar_id": body.calendar_id, "name": body.name, "member_id": body.member_id}
+    database.create_google_calendar(cal)
+    background_tasks.add_task(calendar_sync.sync_all)
+    return {"calendar": cal}
+
+
+@app.delete("/api/google/saved-calendars/{cal_id}")
+async def api_delete_saved_google_calendar(cal_id: str):
+    database.delete_google_calendar(cal_id)
+    return {"ok": True}
+
+
 # ── API: ICS Calendars ────────────────────────────────────────────────────────
 
 class IcsCalendarCreate(BaseModel):

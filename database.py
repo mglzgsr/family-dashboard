@@ -69,6 +69,14 @@ def init_db():
                 event_id TEXT PRIMARY KEY
             );
 
+            CREATE TABLE IF NOT EXISTS google_calendars (
+                id          TEXT PRIMARY KEY,
+                calendar_id TEXT NOT NULL,
+                name        TEXT NOT NULL,
+                member_id   TEXT NOT NULL,
+                created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+            );
+
             CREATE TABLE IF NOT EXISTS ics_calendars (
                 id         TEXT PRIMARY KEY,
                 name       TEXT NOT NULL,
@@ -208,6 +216,27 @@ def update_task(task_id: str, updates: dict):
 def delete_task(task_id: str):
     with get_conn() as conn:
         conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+
+
+# ── Google Calendars (DB) ─────────────────────────────────────────────────────
+
+def get_google_calendars() -> list[dict]:
+    with get_conn() as conn:
+        rows = conn.execute("SELECT * FROM google_calendars ORDER BY created_at").fetchall()
+        return [dict(r) for r in rows]
+
+
+def create_google_calendar(c: dict):
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO google_calendars (id, calendar_id, name, member_id) VALUES (:id, :calendar_id, :name, :member_id)",
+            c,
+        )
+
+
+def delete_google_calendar(cal_id: str):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM google_calendars WHERE id = ?", (cal_id,))
 
 
 # ── ICS Calendars ─────────────────────────────────────────────────────────────

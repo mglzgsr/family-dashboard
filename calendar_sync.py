@@ -208,10 +208,15 @@ def sync_google(week_start: str, week_end: str) -> dict:
         return {"status": "token_error", "error": str(exc)}
 
     total = 0
-    for member_id, cal_id in GOOGLE_CAL_IDS.items():
-        if not cal_id:
-            continue
-        total += sync_google_member(creds, member_id, cal_id, week_start, week_end)
+    db_cals = database.get_google_calendars()
+    if db_cals:
+        for cal in db_cals:
+            total += sync_google_member(creds, cal["member_id"], cal["calendar_id"], week_start, week_end)
+    else:
+        for member_id, cal_id in GOOGLE_CAL_IDS.items():
+            if not cal_id:
+                continue
+            total += sync_google_member(creds, member_id, cal_id, week_start, week_end)
 
     return {"status": "ok", "events_synced": total}
 
