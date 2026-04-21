@@ -267,16 +267,10 @@
 
     /* ── Main layout ─────────────────────────────────────────────────────────── */
     .main {
-      display: grid;
-      grid-template-columns: 1fr 320px;
+      display: flex;
+      flex-direction: column;
       gap: 16px;
       padding: 16px 24px 32px;
-    }
-
-    @media (max-width: 1100px) {
-      .main {
-        grid-template-columns: 1fr;
-      }
     }
 
     @media (max-width: 1100px) {
@@ -523,7 +517,24 @@
       border-radius: var(--radius);
       display: flex;
       flex-direction: column;
-      max-height: 600px;
+    }
+
+    .task-table-header {
+      display: grid;
+      grid-template-columns: 24px 1fr 140px 80px 90px 32px;
+      gap: 8px;
+      padding: 7px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 640px) {
+      .task-table-header { grid-template-columns: 24px 1fr 90px 32px; }
+      .task-col-pri, .task-col-due-h { display: none; }
     }
 
     .tasks-head {
@@ -557,12 +568,18 @@
     }
 
     .task-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 10px 18px;
+      display: grid;
+      grid-template-columns: 24px 1fr 140px 80px 90px 32px;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 18px;
       border-bottom: 1px solid var(--border);
       transition: background .1s;
+    }
+
+    @media (max-width: 640px) {
+      .task-row { grid-template-columns: 24px 1fr 90px 32px; }
+      .task-row .task-col-pri, .task-row .task-col-due { display: none; }
     }
 
     .task-row:hover {
@@ -1770,9 +1787,7 @@
     function renderTaskPanel() {
       const pending = state.tasks.filter(t => !t.completed);
       const done = state.tasks.filter(t => t.completed);
-
       const taskRows = [...pending, ...done].map(t => renderTaskRow(t)).join('');
-
       const empty = state.tasks.length === 0
         ? `<div class="empty"><div class="empty-icon">✅</div><p>Sin tareas pendientes</p></div>`
         : '';
@@ -1784,13 +1799,21 @@
         ${pending.length ? `<span class="badge">${pending.length}</span>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="toggleAddTaskForm()">+ Nueva</button>
       </div>
+      <div class="task-table-header">
+        <div></div>
+        <div>Tarea</div>
+        <div>Asignado</div>
+        <div class="task-col-pri">Prioridad</div>
+        <div class="task-col-due-h">Vence</div>
+        <div></div>
+      </div>
       <div class="tasks-list" id="tasks-list">
         ${empty}${taskRows}
       </div>
       <form class="add-task-form hidden" id="add-task-form" onsubmit="submitTask(event)">
         <input class="add-task-input" id="task-title" placeholder="¿Qué hay que hacer?" autocomplete="off" required>
         <div class="add-task-row">
-          <select id="task-member">${state.members.map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('')}</select>
+          <select id="task-member">${state.members.filter(m => !m.category).map(m => `<option value="${m.id}">${m.emoji} ${m.name}</option>`).join('')}</select>
           <select id="task-priority">
             <option value="high">🔴 Alta</option>
             <option value="medium" selected>🟡 Media</option>
@@ -1807,10 +1830,14 @@
     }
 
     function renderTaskRow(t) {
-      const m = state.members.find(m => m.id === t.member_id) || state.members[state.members.length - 1];
-      const dueLabel = t.due_date ? formatDue(t.due_date) : '';
+      const m = state.members.find(x => x.id === t.member_id) || { id: 'family', name: 'Familia', emoji: '🏠', color: '#DB2777' };
+      const dueLabel = t.due_date ? formatDue(t.due_date) : '—';
       const overdue = t.due_date && !t.completed && new Date(t.due_date + 'T23:59:59') < new Date();
-      const priIcon = { high: '🔴', medium: '🟡', low: '🟢' }[t.priority] || '';
+      const priMap = { high: ['Alta', '#ef4444', 'rgba(239,68,68,.12)'], medium: ['Media', '#D97706', 'rgba(217,119,6,.12)'], low: ['Baja', '#059669', 'rgba(5,150,105,.12)'] };
+      const [priLabel, priColor, priBg] = priMap[t.priority] || priMap.medium;
+      const avatar = m.image
+        ? `<img src="${m.image}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="${m.name}">`
+        : `<span style="font-size:14px;line-height:1">${m.emoji}</span>`;
 
       return `
     <div class="task-row${t.completed ? ' done' : ''}" id="task-${t.id}">
@@ -1819,13 +1846,16 @@
            onclick="toggleTask('${t.id}', ${t.completed ? 0 : 1})">
         <span class="check-icon">✓</span>
       </div>
-      <div class="task-body">
-        <div class="task-title">${escHtml(t.title)}</div>
-        <div class="task-meta">
-          <span class="tag" style="color:${m.color};background:${colorBg(m.id)}">${m.emoji} ${m.name}</span>
-          ${dueLabel ? `<span class="task-due${overdue ? ' overdue' : ''}">${dueLabel}</span>` : ''}
-          ${priIcon ? `<span class="task-priority">${priIcon}</span>` : ''}
-        </div>
+      <div class="task-title">${escHtml(t.title)}</div>
+      <div style="display:flex;align-items:center;gap:5px;min-width:0">
+        ${avatar}
+        <span style="font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.name}</span>
+      </div>
+      <div class="task-col-pri">
+        <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:5px;color:${priColor};background:${priBg}">${priLabel}</span>
+      </div>
+      <div class="task-col-due">
+        <span style="font-size:12px;color:${overdue ? '#ef4444' : 'var(--text-muted)'};font-weight:${overdue ? 600 : 400}">${dueLabel}</span>
       </div>
       <button class="task-del" onclick="deleteTask('${t.id}')" title="Eliminar">✕</button>
     </div>`;
