@@ -1266,9 +1266,13 @@
         </div>
       </div>
       <div class="modal-foot">
-        <button class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
-        <div style="display:flex;gap:10px;flex:1;margin-left:10px">
+        <div id="detail-view-btns" style="display:flex;gap:10px;flex:1">
           <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-event-detail')">Cerrar</button>
+          <button class="btn btn-primary" style="flex:1" onclick="enterDetailEditMode()">Editar</button>
+        </div>
+        <div id="detail-edit-btns" style="display:none;gap:10px;flex:1">
+          <button class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
+          <button class="btn btn-ghost" style="flex:1" onclick="exitDetailEditMode()">Cancelar</button>
           <button class="btn btn-primary" style="flex:1" onclick="saveEventAssignment()">Guardar</button>
         </div>
       </div>
@@ -2130,6 +2134,20 @@
     // ── Event detail & assignment ─────────────────────────────────────────────────
     let _detailEventId = null;
 
+    function _renderDetailMembers(interactive) {
+      const ev = state.events.find(e => e.id === _detailEventId);
+      const current = ev ? (ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id]) : [];
+      const shown = state.members.filter(m => !m.category);
+      document.getElementById('detail-members-edit').innerHTML = shown.map(m => {
+        const active = current.includes(m.id);
+        const img = m.image ? `<img src="${m.image}" alt="${m.name}">` : '';
+        const fallback = `<div class="ev-m-emoji" style="${m.image ? 'display:none' : ''}">${m.emoji}</div>`;
+        const style = !active && !interactive ? 'opacity:0.3;' : '';
+        const click = interactive ? `onclick="toggleDetailMemberBtn('${m.id}')"` : 'style="' + style + 'pointer-events:none"';
+        return `<button type="button" class="ev-member-btn${active ? ' selected' : ''}" data-member="${m.id}" ${click}>${img}${fallback}<span class="ev-m-name">${m.name}</span></button>`;
+      }).join('');
+    }
+
     function openEventDetail(eventId) {
       const ev = state.events.find(e => e.id === eventId);
       if (!ev) return;
@@ -2146,16 +2164,20 @@
       if (ev.description) meta.push(`<span>📝 ${escHtml(ev.description)}</span>`);
       document.getElementById('detail-meta').innerHTML = meta.join('');
 
-      const current = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
-      const shown = state.members.filter(m => !m.category);
-      document.getElementById('detail-members-edit').innerHTML = shown.map(m => {
-        const active = current.includes(m.id);
-        const img = m.image ? `<img src="${m.image}" alt="${m.name}">` : '';
-        const fallback = `<div class="ev-m-emoji" style="${m.image ? 'display:none' : ''}">${m.emoji}</div>`;
-        return `<button type="button" class="ev-member-btn${active ? ' selected' : ''}" data-member="${m.id}" onclick="toggleDetailMemberBtn('${m.id}')">${img}${fallback}<span class="ev-m-name">${m.name}</span></button>`;
-      }).join('');
-
+      exitDetailEditMode();
       document.getElementById('modal-event-detail').classList.remove('hidden');
+    }
+
+    function enterDetailEditMode() {
+      _renderDetailMembers(true);
+      document.getElementById('detail-view-btns').style.display = 'none';
+      document.getElementById('detail-edit-btns').style.display = 'flex';
+    }
+
+    function exitDetailEditMode() {
+      _renderDetailMembers(false);
+      document.getElementById('detail-view-btns').style.display = 'flex';
+      document.getElementById('detail-edit-btns').style.display = 'none';
     }
 
     function toggleDetailMemberBtn(memberId) {
