@@ -123,12 +123,12 @@ async def api_status():
         "apple_configured": apple_configured,
         "last_sync": database.get_setting("last_sync"),
         "members": [
-            {"id": "ale",      "name": "Ale",        "color": "#7C3AED", "emoji": "👩", "adult": True, "image": "/static/assets/ale.png", "category": False},
-            {"id": "miguel",   "name": "Miguel",     "color": "#2563EB", "emoji": "👨", "adult": True, "image": "/static/assets/miguel.png", "category": False},
-            {"id": "noa",      "name": "Noa",        "color": "#059669", "emoji": "🧒", "adult": False, "image": "/static/assets/noa.png", "category": False},
-            {"id": "oli",      "name": "Oli",        "color": "#D97706", "emoji": "👧", "adult": False, "image": "/static/assets/oli.png", "category": False},
-            {"id": "family",   "name": "Familia",    "color": "#DB2777", "emoji": "🏠", "adult": False, "image": "/static/assets/family.png", "category": False},
-            {"id": "birthday", "name": "Cumpleaños", "color": "#B45309", "emoji": "🎂", "adult": False, "image": "/static/assets/birthday.png", "category": True},
+            {"id": "ale",      "name": "Ale",        "color": "#7C3AED", "emoji": "👩", "adult": True, "image": "/static/assets/ale.jpg", "category": False},
+            {"id": "miguel",   "name": "Miguel",     "color": "#2563EB", "emoji": "👨", "adult": True, "image": "/static/assets/miguel.jpg", "category": False},
+            {"id": "noa",      "name": "Noa",        "color": "#059669", "emoji": "🧒", "adult": False, "image": "/static/assets/noa.jpg", "category": False},
+            {"id": "oli",      "name": "Oli",        "color": "#D97706", "emoji": "👧", "adult": False, "image": "/static/assets/oli.jpg", "category": False},
+            {"id": "family",   "name": "Familia",    "color": "#DB2777", "emoji": "🏠", "adult": False, "image": "/static/assets/family.jpg", "category": False},
+            {"id": "birthday", "name": "Cumpleaños", "color": "#B45309", "emoji": "🎂", "adult": False, "image": "/static/assets/birthday.jpg", "category": True},
         ],
     }
 
