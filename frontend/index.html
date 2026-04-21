@@ -146,10 +146,8 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
   .day-col { min-height: 120px; }
   .day-num { font-size: 15px; }
 
-  .modal { padding: 0; align-items: flex-end; }
-  .modal-box { width: 100%; max-width: 100%; border-radius: var(--radius) var(--radius) 0 0; max-height: 90vh; overflow-y: auto; }
-
-  .settings-modal .modal-box { max-height: 95vh; }
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal { width: 100%; max-width: 100%; border-radius: var(--radius) var(--radius) 0 0; max-height: 92dvh; }
 }
 
 /* ── Week calendar ──────────────────────────────────────────────────────── */
@@ -311,6 +309,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .modal {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); width: 100%; max-width: 440px;
+  max-height: calc(100dvh - 32px); overflow-y: auto;
   animation: slideUp .2s;
 }
 @keyframes slideUp { from { transform: translateY(8px); opacity: 0; } }
