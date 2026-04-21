@@ -168,7 +168,7 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 
 .week-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   border-top: 1px solid var(--border);
 }
 .day-col { border-right: 1px solid var(--border); min-height: 200px; }
