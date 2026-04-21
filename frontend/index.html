@@ -533,8 +533,14 @@
     }
 
     @media (max-width: 640px) {
-      .task-table-header { grid-template-columns: 24px 1fr 90px 32px; }
-      .task-col-pri, .task-col-due-h { display: none; }
+      .task-table-header {
+        grid-template-columns: 24px 1fr 90px 32px;
+      }
+
+      .task-col-pri,
+      .task-col-due-h {
+        display: none;
+      }
     }
 
     .tasks-head {
@@ -578,8 +584,14 @@
     }
 
     @media (max-width: 640px) {
-      .task-row { grid-template-columns: 24px 1fr 90px 32px; }
-      .task-row .task-col-pri, .task-row .task-col-due { display: none; }
+      .task-row {
+        grid-template-columns: 24px 1fr 90px 32px;
+      }
+
+      .task-row .task-col-pri,
+      .task-row .task-col-due {
+        display: none;
+      }
     }
 
     .task-row:hover {
@@ -831,13 +843,58 @@
       flex: 1;
     }
 
-    .ev-member-picker { display:flex; gap:8px; flex-wrap:wrap; }
-    .ev-member-btn { display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 8px; border-radius:10px; border:2px solid transparent; cursor:pointer; background:var(--surface2); transition:all .15s; min-width:52px; }
-    .ev-member-btn img { width:36px; height:36px; border-radius:50%; object-fit:cover; }
-    .ev-member-btn .ev-m-emoji { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; background:var(--border); }
-    .ev-member-btn span.ev-m-name { font-size:10px; font-weight:600; color:var(--text-muted); }
-    .ev-member-btn.selected { border-color:#7C3AED; background:rgba(124,58,237,.12); }
-    .ev-member-btn.selected span.ev-m-name { color:var(--text); }
+    .ev-member-picker {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ev-member-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      background: var(--surface2);
+      transition: all .15s;
+      min-width: 52px;
+    }
+
+    .ev-member-btn img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .ev-member-btn .ev-m-emoji {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: var(--border);
+    }
+
+    .ev-member-btn span.ev-m-name {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .ev-member-btn.selected {
+      border-color: #7C3AED;
+      background: rgba(124, 58, 237, .12);
+    }
+
+    .ev-member-btn.selected span.ev-m-name {
+      color: var(--text);
+    }
 
     .day-pill {
       display: flex;
@@ -1346,14 +1403,19 @@
           </div>
         </div>
 
-        <div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div
+          style="padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
           <span id="settings-last-sync" style="font-size:12px;color:var(--text-muted)"></span>
           <div style="display:flex;gap:8px;align-items:center">
             <button class="btn btn-ghost btn-sm" id="theme-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
-            <button class="btn btn-ghost btn-sm" onclick="triggerSync()" title="Sincronizar calendarios" style="display:flex;align-items:center;gap:6px">
-              <svg id="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-                <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+            <button class="btn btn-ghost btn-sm" onclick="triggerSync()" title="Sincronizar calendarios"
+              style="display:flex;align-items:center;gap:6px">
+              <svg id="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 2v6h-6" />
+                <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+                <path d="M3 22v-6h6" />
+                <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
               </svg>
               Sincronizar
             </button>
@@ -1793,7 +1855,7 @@
       <div class="tasks-head">
         <h2>Tareas</h2>
         ${pending.length ? `<span class="badge">${pending.length}</span>` : ''}
-        <button class="btn btn-ghost btn-sm" onclick="toggleAddTaskForm()">+ Nueva</button>
+        <button class="btn btn-primary btn-sm" onclick="toggleAddTaskForm()">+ Nueva</button>
       </div>
       <div class="task-table-header">
         <div></div>
@@ -2134,20 +2196,6 @@
     // ── Event detail & assignment ─────────────────────────────────────────────────
     let _detailEventId = null;
 
-    function _renderDetailMembers(interactive) {
-      const ev = state.events.find(e => e.id === _detailEventId);
-      const current = ev ? (ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id]) : [];
-      const shown = state.members.filter(m => !m.category);
-      document.getElementById('detail-members-edit').innerHTML = shown.map(m => {
-        const active = current.includes(m.id);
-        const img = m.image ? `<img src="${m.image}" alt="${m.name}">` : '';
-        const fallback = `<div class="ev-m-emoji" style="${m.image ? 'display:none' : ''}">${m.emoji}</div>`;
-        const style = !active && !interactive ? 'opacity:0.3;' : '';
-        const click = interactive ? `onclick="toggleDetailMemberBtn('${m.id}')"` : 'style="' + style + 'pointer-events:none"';
-        return `<button type="button" class="ev-member-btn${active ? ' selected' : ''}" data-member="${m.id}" ${click}>${img}${fallback}<span class="ev-m-name">${m.name}</span></button>`;
-      }).join('');
-    }
-
     function openEventDetail(eventId) {
       const ev = state.events.find(e => e.id === eventId);
       if (!ev) return;
@@ -2164,20 +2212,16 @@
       if (ev.description) meta.push(`<span>📝 ${escHtml(ev.description)}</span>`);
       document.getElementById('detail-meta').innerHTML = meta.join('');
 
-      exitDetailEditMode();
+      const current = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+      const shown = state.members.filter(m => !m.category);
+      document.getElementById('detail-members-edit').innerHTML = shown.map(m => {
+        const active = current.includes(m.id);
+        const img = m.image ? `<img src="${m.image}" alt="${m.name}">` : '';
+        const fallback = `<div class="ev-m-emoji" style="${m.image ? 'display:none' : ''}">${m.emoji}</div>`;
+        return `<button type="button" class="ev-member-btn${active ? ' selected' : ''}" data-member="${m.id}" onclick="toggleDetailMemberBtn('${m.id}')">${img}${fallback}<span class="ev-m-name">${m.name}</span></button>`;
+      }).join('');
+
       document.getElementById('modal-event-detail').classList.remove('hidden');
-    }
-
-    function enterDetailEditMode() {
-      _renderDetailMembers(true);
-      document.getElementById('detail-view-btns').style.display = 'none';
-      document.getElementById('detail-edit-btns').style.display = 'flex';
-    }
-
-    function exitDetailEditMode() {
-      _renderDetailMembers(false);
-      document.getElementById('detail-view-btns').style.display = 'flex';
-      document.getElementById('detail-edit-btns').style.display = 'none';
     }
 
     function toggleDetailMemberBtn(memberId) {
