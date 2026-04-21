@@ -128,6 +128,29 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .main { display: grid; grid-template-columns: 1fr 320px; gap: 16px; padding: 16px 24px 32px; }
 @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
 
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .header { padding: 0 12px; gap: 8px; }
+  .header-sep { display: none; }
+  .header-members { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; flex-shrink: 1; min-width: 0; }
+  .header-members::-webkit-scrollbar { display: none; }
+  .header-logo span { display: none; }
+
+  .banner { margin: 10px 12px 0; font-size: 12px; }
+
+  .main { padding: 10px 12px 24px; gap: 10px; }
+
+  .calendar-card { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .week-grid { min-width: 560px; }
+  .day-col { min-height: 120px; }
+  .day-num { font-size: 15px; }
+
+  .modal { padding: 0; align-items: flex-end; }
+  .modal-box { width: 100%; max-width: 100%; border-radius: var(--radius) var(--radius) 0 0; max-height: 90vh; overflow-y: auto; }
+
+  .settings-modal .modal-box { max-height: 95vh; }
+}
+
 /* ── Week calendar ──────────────────────────────────────────────────────── */
 .calendar-card {
   background: var(--surface);
