@@ -65,6 +65,10 @@ def init_db():
                 PRIMARY KEY (event_id, member_id)
             );
 
+            CREATE TABLE IF NOT EXISTS hidden_events (
+                event_id TEXT PRIMARY KEY
+            );
+
             CREATE TABLE IF NOT EXISTS ics_calendars (
                 id         TEXT PRIMARY KEY,
                 name       TEXT NOT NULL,
@@ -85,6 +89,7 @@ def get_events(week_start: str, week_end: str, member_id: str | None = None) -> 
                 FROM events e
                 LEFT JOIN event_assignments ea ON e.id = ea.event_id
                 WHERE e.start_dt >= ? AND e.start_dt < ?
+                AND e.id NOT IN (SELECT event_id FROM hidden_events)
                 AND (
                     EXISTS (SELECT 1 FROM event_assignments WHERE event_id = e.id AND member_id = ?)
                     OR (e.member_id = ? AND NOT EXISTS (SELECT 1 FROM event_assignments WHERE event_id = e.id))
@@ -98,6 +103,7 @@ def get_events(week_start: str, week_end: str, member_id: str | None = None) -> 
                 FROM events e
                 LEFT JOIN event_assignments ea ON e.id = ea.event_id
                 WHERE e.start_dt >= ? AND e.start_dt < ?
+                AND e.id NOT IN (SELECT event_id FROM hidden_events)
                 GROUP BY e.id
                 ORDER BY e.start_dt
             """, (week_start, week_end)).fetchall()
@@ -145,9 +151,11 @@ def assign_event_members(event_id: str, member_ids: list[str]):
 
 
 def delete_event(event_id: str):
-    """Only manual events can be deleted via the UI."""
     with get_conn() as conn:
         conn.execute("DELETE FROM events WHERE id = ? AND source = 'manual'", (event_id,))
+        conn.execute(
+            "INSERT OR IGNORE INTO hidden_events (event_id) VALUES (?)", (event_id,)
+        )
 
 
 def delete_synced_events_for_member(member_id: str, source: str, week_start: str, week_end: str):

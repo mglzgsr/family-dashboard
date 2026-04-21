@@ -186,7 +186,8 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
 .c-noa      { color: var(--noa);      background: var(--noa-bg); }
 .c-oli      { color: var(--oli);      background: var(--oli-bg); }
 .c-family   { color: var(--family);   background: var(--family-bg); }
-.c-birthday { color: #B45309; background: #2d1f06; border-left-color: #F59E0B !important; font-style: italic; }
+.c-birthday { color: #FBBF24; background: #1c1500; border-left-color: #FBBF24 !important; font-style: italic; }
+[data-theme="light"] .c-birthday { color: #92400E; background: #FEF3C7; border-left-color: #F59E0B !important; }
 
 /* ── Task panel ─────────────────────────────────────────────────────────── */
 .tasks-card {
@@ -474,9 +475,12 @@ button { cursor: pointer; border: none; background: none; font: inherit; color: 
         <div class="member-checkboxes" id="detail-members"></div>
       </div>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="closeModal('modal-event-detail')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveEventAssignment()">Guardar</button>
+    <div class="modal-foot" style="justify-content:space-between">
+      <button class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
+      <div style="display:flex;gap:10px;flex:1;margin-left:10px">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-event-detail')">Cancelar</button>
+        <button class="btn btn-primary" style="flex:1" onclick="saveEventAssignment()">Guardar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -644,15 +648,20 @@ async function loadTasks() {
 async function triggerSync() {
   const icon = document.getElementById('sync-icon');
   icon.classList.add('spinning');
+  const prevSync = state.status.last_sync;
   try {
     await api('POST', '/api/sync');
-    // Wait a moment for background sync to process, then reload
-    setTimeout(async () => {
+    let attempts = 0;
+    const poll = setInterval(async () => {
+      attempts++;
       await loadStatus();
-      await loadEvents();
-      render();
-      icon.classList.remove('spinning');
-      showToast('🔄 Sincronización iniciada');
+      if (state.status.last_sync !== prevSync || attempts >= 15) {
+        clearInterval(poll);
+        await loadEvents();
+        render();
+        icon.classList.remove('spinning');
+        showToast('✅ Calendarios sincronizados');
+      }
     }, 2000);
   } catch {
     icon.classList.remove('spinning');
@@ -1061,6 +1070,17 @@ function openEventDetail(eventId) {
   }).join('');
 
   document.getElementById('modal-event-detail').classList.remove('hidden');
+}
+
+async function deleteEventFromModal() {
+  if (!confirm('¿Eliminar este evento de la vista?')) return;
+  try {
+    await api('DELETE', `/api/events/${_detailEventId}`);
+    closeModal('modal-event-detail');
+    state.events = state.events.filter(e => e.id !== _detailEventId);
+    render();
+    showToast('🗑 Evento eliminado');
+  } catch { showToast('⚠️ Error al eliminar'); }
 }
 
 async function saveEventAssignment() {
