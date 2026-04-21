@@ -665,7 +665,7 @@ async function loadStatus() {
 
 async function loadEvents() {
   const week = fmtDate(getWeekMonday(state.currentWeek));
-  const member = state.currentMember?.id || '';
+  const member = (state.currentMember ? state.currentMember.id : null) || '';
   const url = `/api/events?week=${week}${member ? '&member='+member : ''}`;
   try {
     const data = await api('GET', url);
@@ -674,7 +674,7 @@ async function loadEvents() {
 }
 
 async function loadTasks() {
-  const member = state.currentMember?.id || '';
+  const member = (state.currentMember ? state.currentMember.id : null) || '';
   const url = `/api/tasks${member ? '?member='+member : ''}`;
   try {
     const data = await api('GET', url);
@@ -782,7 +782,7 @@ function renderMemberPills() {
   if (!container || !state.members.length) return;
   const shown = state.members.filter(m => !m.category && m.id !== 'family');
   container.innerHTML = shown.map(m => {
-    const active = state.currentMember?.id === m.id;
+    const active = (state.currentMember ? state.currentMember.id : null) === m.id;
     return `<button class="member-pill${active ? ' active' : ''}"
         style="color:${m.color}${active ? ';background:'+colorBg(m.id) : ''}"
         onclick="navigate('/member/${m.id}')">
@@ -1277,7 +1277,7 @@ function hideGcalPicker(accountId) {
 async function submitAddGcal(accountId) {
   const picker = document.getElementById(`gcal-picker-${accountId}`);
   const calendar_id = picker.value;
-  const name = picker.options[picker.selectedIndex]?.text || calendar_id;
+  const name = (picker.options[picker.selectedIndex] ? picker.options[picker.selectedIndex].text : null) || calendar_id;
   const member_id = document.getElementById(`gcal-member-${accountId}`).value;
   if (!calendar_id || calendar_id === 'Cargando...' || calendar_id === 'Error al cargar') return;
   try {
