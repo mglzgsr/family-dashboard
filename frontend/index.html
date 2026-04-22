@@ -1702,7 +1702,8 @@
             ? `<span class="evt-members">${members.map(id => { const m = state.members.find(x => x.id === id); return m ? m.emoji : ''; }).join('')}</span>`
             : '';
           const time = ev.all_day ? '' : `<span class="evt-time">${ev.start_dt.slice(11, 16)}</span>`;
-          return `<div class="event-chip ${colorClass}" style="cursor:pointer" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}${ev.location ? ' · ' + escHtml(ev.location) : ''}">${time}${escHtml(ev.title)}${dots}</div>`;
+          const loc = ev.location ? `<span class="evt-loc">${escHtml(ev.location)}</span>` : '';
+          return `<div class="event-chip ${colorClass}" style="cursor:pointer" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}${ev.location ? ' · ' + escHtml(ev.location) : ''}">${time}${escHtml(ev.title)}${dots}${loc}</div>`;
         }).join('');
 
         return `
@@ -2209,6 +2210,9 @@
       document.documentElement.setAttribute('data-theme', t);
       document.getElementById('theme-btn').textContent = t === 'dark' ? '🌙' : '☀️';
       localStorage.setItem('theme', t);
+      document.querySelectorAll('gmp-place-autocomplete').forEach(function(el) {
+        el.setAttribute('colorScheme', t);
+      });
     }
     function toggleTheme() {
       setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
@@ -2534,6 +2538,7 @@
         if (!original) return;
         var pac = new google.maps.places.PlaceAutocompleteElement();
         pac.setAttribute('placeholder', original.getAttribute('placeholder') || 'Lugar');
+        pac.setAttribute('colorScheme', document.documentElement.getAttribute('data-theme') || 'light');
         original.parentNode.insertBefore(pac, original);
         original.style.display = 'none';
         _pacElements[id] = pac;
