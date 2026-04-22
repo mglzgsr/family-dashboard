@@ -218,12 +218,13 @@ def update_event(event_id: str, updates: dict):
         conn.execute(f"UPDATE events SET {set_clause} WHERE id = :id", filtered)
 
 
-def delete_event(event_id: str):
+def delete_event(event_id: str, hide: bool = True):
     with get_conn() as conn:
-        conn.execute("DELETE FROM events WHERE id = ? AND source = 'manual'", (event_id,))
-        conn.execute(
-            "INSERT OR IGNORE INTO hidden_events (event_id) VALUES (?)", (event_id,)
-        )
+        if hide:
+            conn.execute("DELETE FROM events WHERE id = ? AND source = 'manual'", (event_id,))
+            conn.execute("INSERT OR IGNORE INTO hidden_events (event_id) VALUES (?)", (event_id,))
+        else:
+            conn.execute("DELETE FROM events WHERE id = ?", (event_id,))
 
 
 def delete_synced_events_for_member(member_id: str, source: str, week_start: str, week_end: str):

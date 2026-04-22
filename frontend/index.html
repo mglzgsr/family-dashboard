@@ -1381,6 +1381,11 @@
           <button class="btn btn-ghost" style="flex:1;font-size:12px;color:#ef4444" onclick="confirmDeleteSeries()">Toda la serie</button>
           <button class="btn btn-ghost" style="flex:0" onclick="cancelDeleteSeries()">✕</button>
         </div>
+        <div id="detail-sync-delete-btns" style="display:none;gap:6px;flex:1;align-items:center">
+          <button class="btn btn-ghost" style="flex:1;font-size:12px" onclick="confirmDeleteReimport()">Volverá en sync</button>
+          <button class="btn btn-ghost" style="flex:1;font-size:12px;color:#ef4444" onclick="confirmDeleteHide()">Ocultar siempre</button>
+          <button class="btn btn-ghost" style="flex:0" onclick="cancelSyncDelete()">✕</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2327,6 +2332,7 @@
       document.getElementById('detail-view-btns').style.display = 'flex';
       document.getElementById('detail-edit-btns').style.display = 'none';
       document.getElementById('detail-series-btns').style.display = 'none';
+      document.getElementById('detail-sync-delete-btns').style.display = 'none';
       document.getElementById('detail-members-edit').style.pointerEvents = 'none';
       document.getElementById('modal-event-detail').classList.remove('hidden');
     }
@@ -2368,6 +2374,7 @@
       document.getElementById('detail-view-btns').style.display = 'flex';
       document.getElementById('detail-edit-btns').style.display = 'none';
       document.getElementById('detail-series-btns').style.display = 'none';
+      document.getElementById('detail-sync-delete-btns').style.display = 'none';
       document.getElementById('detail-members-edit').style.pointerEvents = 'none';
     }
 
@@ -2376,40 +2383,50 @@
       if (btn) btn.classList.toggle('selected');
     }
 
+    function _showDeletePanel(panelId) {
+      document.getElementById('detail-edit-btns').style.display = 'none';
+      document.getElementById('detail-series-btns').style.display = 'none';
+      document.getElementById('detail-sync-delete-btns').style.display = 'none';
+      document.getElementById(panelId).style.display = 'flex';
+    }
+
+    function _hideDeletePanels() {
+      document.getElementById('detail-series-btns').style.display = 'none';
+      document.getElementById('detail-sync-delete-btns').style.display = 'none';
+      document.getElementById('detail-edit-btns').style.display = 'flex';
+    }
+
     function deleteEventFromModal() {
       var ev = state.events.find(function(e) { return e.id === _detailEventId; });
-      if (ev && ev.series_id) {
-        document.getElementById('detail-edit-btns').style.display = 'none';
-        document.getElementById('detail-series-btns').style.display = 'flex';
-        return;
-      }
+      if (ev && ev.series_id) { _showDeletePanel('detail-series-btns'); return; }
+      if (ev && ev.source && ev.source !== 'manual') { _showDeletePanel('detail-sync-delete-btns'); return; }
       var btn = document.getElementById('detail-delete-btn');
       if (btn.dataset.confirming !== 'true') {
         btn.dataset.confirming = 'true';
         btn.textContent = '¿Seguro?';
-        setTimeout(function() {
-          btn.dataset.confirming = 'false';
-          btn.textContent = 'Eliminar';
-        }, 3000);
+        setTimeout(function() { btn.dataset.confirming = 'false'; btn.textContent = 'Eliminar'; }, 3000);
         return;
       }
       btn.dataset.confirming = 'false';
       btn.textContent = 'Eliminar';
-      _doDeleteEvent(_detailEventId);
+      _doDeleteEvent(_detailEventId, true);
     }
 
-    function _doDeleteEvent(eventId) {
-      api('DELETE', '/api/events/' + eventId).then(function() {
+    function _doDeleteEvent(eventId, hide) {
+      var url = '/api/events/' + eventId + (hide ? '' : '?reimport=true');
+      api('DELETE', url).then(function() {
         closeModal('modal-event-detail');
         state.events = state.events.filter(function(e) { return e.id !== eventId; });
         render();
-        showToast('🗑 Evento eliminado');
+        showToast(hide ? '🗑 Evento eliminado' : '🗑 Eliminado (volverá en el sync)');
       }).catch(function() { showToast('⚠️ Error al eliminar'); });
     }
 
-    function confirmDeleteSingle() {
-      _doDeleteEvent(_detailEventId);
-    }
+    function confirmDeleteSingle() { _doDeleteEvent(_detailEventId, true); }
+    function cancelDeleteSeries() { _hideDeletePanels(); }
+    function cancelSyncDelete() { _hideDeletePanels(); }
+    function confirmDeleteHide() { _doDeleteEvent(_detailEventId, true); }
+    function confirmDeleteReimport() { _doDeleteEvent(_detailEventId, false); }
 
     function confirmDeleteSeries() {
       var ev = state.events.find(function(e) { return e.id === _detailEventId; });
@@ -2421,11 +2438,6 @@
         render();
         showToast('🗑 Serie eliminada');
       }).catch(function() { showToast('⚠️ Error al eliminar'); });
-    }
-
-    function cancelDeleteSeries() {
-      document.getElementById('detail-series-btns').style.display = 'none';
-      document.getElementById('detail-edit-btns').style.display = 'flex';
     }
 
     async function saveEventAssignment() {

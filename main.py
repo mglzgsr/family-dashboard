@@ -218,8 +218,8 @@ async def api_admin_reset(background_tasks: BackgroundTasks):
 
 
 @app.delete("/api/events/{event_id}")
-async def api_delete_event(event_id: str):
-    database.delete_event(event_id)
+async def api_delete_event(event_id: str, reimport: bool = False):
+    database.delete_event(event_id, hide=not reimport)
     return {"ok": True}
 
 
