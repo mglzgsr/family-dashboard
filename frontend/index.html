@@ -2221,7 +2221,29 @@
         return `<button type="button" class="ev-member-btn${active ? ' selected' : ''}" data-member="${m.id}" onclick="toggleDetailMemberBtn('${m.id}')">${img}${fallback}<span class="ev-m-name">${m.name}</span></button>`;
       }).join('');
 
+      document.getElementById('detail-view-btns').style.display = 'flex';
+      document.getElementById('detail-edit-btns').style.display = 'none';
+      document.getElementById('detail-members-edit').style.pointerEvents = 'none';
       document.getElementById('modal-event-detail').classList.remove('hidden');
+    }
+
+    function enterDetailEditMode() {
+      document.getElementById('detail-view-btns').style.display = 'none';
+      document.getElementById('detail-edit-btns').style.display = 'flex';
+      document.getElementById('detail-members-edit').style.pointerEvents = '';
+    }
+
+    function exitDetailEditMode() {
+      const ev = state.events.find(function(e) { return e.id === _detailEventId; });
+      if (ev) {
+        const current = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
+        document.querySelectorAll('#detail-members-edit .ev-member-btn').forEach(function(btn) {
+          btn.classList.toggle('selected', current.indexOf(btn.dataset.member) !== -1);
+        });
+      }
+      document.getElementById('detail-view-btns').style.display = 'flex';
+      document.getElementById('detail-edit-btns').style.display = 'none';
+      document.getElementById('detail-members-edit').style.pointerEvents = 'none';
     }
 
     function toggleDetailMemberBtn(memberId) {
