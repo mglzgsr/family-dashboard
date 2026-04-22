@@ -1374,7 +1374,7 @@
         <div id="detail-edit-btns" style="display:none;gap:10px;flex:1">
           <button id="detail-delete-btn" class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
           <button class="btn btn-ghost" style="flex:1" onclick="exitDetailEditMode()">Cancelar</button>
-          <button class="btn btn-primary" style="flex:1" onclick="saveEventAssignment()">Guardar</button>
+          <button class="btn btn-primary" style="flex:1" id="detail-save-btn" onclick="saveEventAssignment()">Guardar</button>
         </div>
         <div id="detail-series-btns" style="display:none;gap:6px;flex:1;align-items:center">
           <button class="btn btn-ghost" style="flex:1;font-size:12px" onclick="confirmDeleteSingle()">Solo este</button>
@@ -2441,10 +2441,18 @@
     }
 
     async function saveEventAssignment() {
+      const saveBtn = document.getElementById('detail-save-btn');
+      if (saveBtn.disabled) return;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Guardando...';
       const ev = state.events.find(function(e) { return e.id === _detailEventId; });
       const btns = document.querySelectorAll('#detail-members-edit .ev-member-btn.selected');
       const member_ids = [...btns].map(function(b) { return b.dataset.member; });
-      if (!member_ids.length) { showToast('⚠️ Selecciona al menos un miembro'); return; }
+      if (!member_ids.length) {
+        showToast('⚠️ Selecciona al menos un miembro');
+        saveBtn.disabled = false; saveBtn.textContent = 'Guardar';
+        return;
+      }
       const date = document.getElementById('detail-edit-date').value;
       const startTime = document.getElementById('detail-edit-start').value;
       const endTime = document.getElementById('detail-edit-end').value;
@@ -2482,7 +2490,11 @@
         await loadEvents();
         render();
         showToast('✅ Evento guardado');
-      } catch(e) { showToast('⚠️ Error al guardar'); }
+      } catch(e) {
+        showToast('⚠️ Error al guardar');
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar';
+      }
     }
 
     // ── Settings ──────────────────────────────────────────────────────────────────
