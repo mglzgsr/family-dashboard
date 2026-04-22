@@ -2230,6 +2230,8 @@
         return `<button type="button" class="ev-member-btn${active ? ' selected' : ''}" data-member="${m.id}" onclick="toggleDetailMemberBtn('${m.id}')">${img}${fallback}<span class="ev-m-name">${m.name}</span></button>`;
       }).join('');
 
+      document.getElementById('detail-meta').style.display = '';
+      document.getElementById('detail-edit-fields').style.display = 'none';
       document.getElementById('detail-view-btns').style.display = 'flex';
       document.getElementById('detail-edit-btns').style.display = 'none';
       document.getElementById('detail-members-edit').style.pointerEvents = 'none';
