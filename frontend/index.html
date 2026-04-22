@@ -962,19 +962,7 @@
       border-color: #7C3AED;
     }
 
-    .modal gmp-place-autocomplete {
-      width: 100%;
-      display: block;
-      --gmp-input-background-color: var(--surface2);
-      --gmp-input-border-color: var(--border);
-      --gmp-input-border-radius: var(--radius-sm);
-      --gmp-input-color: var(--text);
-      --gmp-input-padding: 9px 12px;
-      --gmp-input-font-size: 13px;
-      --gmp-input-focus-border-color: #7C3AED;
-    }
-
-    .modal textarea {
+.modal textarea {
       resize: vertical;
       min-height: 60px;
     }
@@ -2006,7 +1994,7 @@
 
       document.getElementById('ev-date').value = dateStr;
       document.getElementById('ev-title').value = '';
-      _setLocVal('ev-location', '');
+      document.getElementById('ev-location').value = '';
       document.getElementById('ev-description').value = '';
       document.getElementById('ev-allday').checked = false;
       document.getElementById('ev-start').disabled = false;
@@ -2071,7 +2059,7 @@
       const end = document.getElementById('ev-end').value;
       const selectedMembers = getSelectedMembers();
       const member = selectedMembers.length > 0 ? selectedMembers[0] : 'family';
-      const loc = _getLocVal('ev-location').trim();
+      const loc = document.getElementById('ev-location').value.trim();
       const desc = document.getElementById('ev-description').value.trim();
       const recurrence = document.getElementById('ev-recurrence').value;
       const days = recurrence === 'weekly'
@@ -2219,9 +2207,6 @@
       document.documentElement.setAttribute('data-theme', t);
       document.getElementById('theme-btn').textContent = t === 'dark' ? '🌙' : '☀️';
       localStorage.setItem('theme', t);
-      document.querySelectorAll('gmp-place-autocomplete').forEach(function(el) {
-        el.setAttribute('colorScheme', t === 'dark' ? 'DARK' : 'LIGHT');
-      });
     }
     function toggleTheme() {
       setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
@@ -2270,7 +2255,7 @@
         document.getElementById('detail-edit-date').value = ev.start_dt ? ev.start_dt.slice(0, 10) : '';
         document.getElementById('detail-edit-start').value = ev.all_day ? '' : (ev.start_dt ? ev.start_dt.slice(11, 16) : '');
         document.getElementById('detail-edit-end').value = ev.all_day ? '' : (ev.end_dt ? ev.end_dt.slice(11, 16) : '');
-        _setLocVal('detail-edit-location', ev.location || '');
+        document.getElementById('detail-edit-location').value = ev.location || '';
         var timeRow = document.getElementById('detail-edit-fields').querySelector('div');
         timeRow.style.display = ev.all_day ? 'none' : 'flex';
       }
@@ -2323,7 +2308,7 @@
       const allDay = ev && ev.all_day;
       const updates = {
         title: document.getElementById('detail-edit-title').value || undefined,
-        location: _getLocVal('detail-edit-location') || undefined,
+        location: document.getElementById('detail-edit-location').value || undefined,
         start_dt: allDay ? date : (date && startTime ? date + 'T' + startTime : undefined),
         end_dt: allDay ? date : (date && endTime ? date + 'T' + endTime : undefined),
       };
@@ -2525,39 +2510,16 @@
     }
   </script>
   <script>
-    var _pacElements = {};
-
-    function _getLocVal(id) {
-      var pac = _pacElements[id];
-      if (pac && pac.value) return pac.value;
-      var el = document.getElementById(id);
-      return el ? el.value : '';
-    }
-
-    function _setLocVal(id, val) {
-      var pac = _pacElements[id];
-      if (pac) pac.value = val || '';
-      var el = document.getElementById(id);
-      if (el) el.value = val || '';
-    }
-
     function initPlacesAutocomplete() {
       ['ev-location', 'detail-edit-location'].forEach(function(id) {
-        var original = document.getElementById(id);
-        if (!original) return;
-        var pac = new google.maps.places.PlaceAutocompleteElement();
-        pac.setAttribute('placeholder', original.getAttribute('placeholder') || 'Lugar');
-        var theme = document.documentElement.getAttribute('data-theme') || 'light';
-        pac.setAttribute('colorScheme', theme === 'dark' ? 'DARK' : 'LIGHT');
-        original.parentNode.insertBefore(pac, original);
-        original.style.display = 'none';
-        _pacElements[id] = pac;
-        pac.addEventListener('gmp-placeselect', function(event) {
-          var place = event.place;
-          place.fetchFields({ fields: ['displayName', 'formattedAddress'] }).then(function() {
-            var val = place.formattedAddress || place.displayName || '';
-            original.value = val;
-          });
+        var input = document.getElementById(id);
+        if (!input) return;
+        var ac = new google.maps.places.Autocomplete(input, { fields: ['formatted_address', 'name'] });
+        ac.addListener('place_changed', function() {
+          var place = ac.getPlace();
+          input.value = place.name && place.formatted_address
+            ? place.name + ', ' + place.formatted_address
+            : place.formatted_address || place.name || input.value;
         });
       });
     }
