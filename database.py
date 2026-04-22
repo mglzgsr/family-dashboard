@@ -100,6 +100,10 @@ def init_db():
             conn.execute("ALTER TABLE events ADD COLUMN series_id TEXT")
         except Exception:
             pass
+        try:
+            conn.execute("ALTER TABLE events ADD COLUMN manually_edited INTEGER NOT NULL DEFAULT 0")
+        except Exception:
+            pass
 
         legacy_token = conn.execute(
             "SELECT value FROM settings WHERE key = 'google_token'"
@@ -159,6 +163,7 @@ def upsert_event(e: dict):
                 all_day     = excluded.all_day,
                 description = excluded.description,
                 location    = excluded.location
+            WHERE events.manually_edited = 0
             """,
             e,
         )
@@ -206,6 +211,7 @@ def update_event(event_id: str, updates: dict):
     filtered = {k: v for k, v in updates.items() if k in allowed}
     if not filtered:
         return
+    filtered["manually_edited"] = 1
     set_clause = ", ".join(f"{k} = :{k}" for k in filtered)
     filtered["id"] = event_id
     with get_conn() as conn:
