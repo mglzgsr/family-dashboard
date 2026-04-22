@@ -2338,6 +2338,9 @@
     }
 
     function enterDetailEditMode() {
+      var saveBtn = document.getElementById('detail-save-btn');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Guardar';
       const ev = state.events.find(function(e) { return e.id === _detailEventId; });
       if (ev) {
         document.getElementById('detail-edit-title').value = ev.title || '';
@@ -2475,8 +2478,8 @@
             if (dates[i] === date) continue;
             var s = allDay ? dates[i] : (startTime ? dates[i] + 'T' + startTime : dates[i]);
             var e2 = allDay ? dates[i] : (endTime ? dates[i] + 'T' + endTime : s);
-            var res = await api('POST', '/api/events', { title, start_dt: s, end_dt: e2, all_day: allDay, member_id: ev ? ev.member_id : member_ids[0], location: location || null, series_id: sid });
-            if (member_ids.length > 1 && res && res.event) {
+            var res = await api('POST', '/api/events', { title, start_dt: s, end_dt: e2, all_day: allDay, member_id: member_ids[0], location: location || null, series_id: sid });
+            if (res && res.event) {
               await api('PUT', '/api/events/' + res.event.id + '/assignments', { member_ids });
             }
           }
