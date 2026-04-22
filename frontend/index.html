@@ -1317,6 +1317,15 @@
       </div>
       <div class="modal-body">
         <div class="event-detail-meta" id="detail-meta"></div>
+        <div id="detail-edit-fields" style="display:none;flex-direction:column;gap:8px;margin-bottom:12px">
+          <input id="detail-edit-title" type="text" placeholder="Título">
+          <div style="display:flex;gap:8px">
+            <input id="detail-edit-date" type="date" style="flex:1">
+            <input id="detail-edit-start" type="time" style="flex:1">
+            <input id="detail-edit-end" type="time" style="flex:1">
+          </div>
+          <input id="detail-edit-location" type="text" placeholder="Lugar">
+        </div>
         <div>
           <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:8px">Participantes</label>
           <div class="ev-member-picker" id="detail-members-edit"></div>
@@ -2228,6 +2237,18 @@
     }
 
     function enterDetailEditMode() {
+      const ev = state.events.find(function(e) { return e.id === _detailEventId; });
+      if (ev) {
+        document.getElementById('detail-edit-title').value = ev.title || '';
+        document.getElementById('detail-edit-date').value = ev.start_dt ? ev.start_dt.slice(0, 10) : '';
+        document.getElementById('detail-edit-start').value = ev.all_day ? '' : (ev.start_dt ? ev.start_dt.slice(11, 16) : '');
+        document.getElementById('detail-edit-end').value = ev.all_day ? '' : (ev.end_dt ? ev.end_dt.slice(11, 16) : '');
+        document.getElementById('detail-edit-location').value = ev.location || '';
+        var timeRow = document.getElementById('detail-edit-fields').querySelector('div');
+        timeRow.style.display = ev.all_day ? 'none' : 'flex';
+      }
+      document.getElementById('detail-meta').style.display = 'none';
+      document.getElementById('detail-edit-fields').style.display = 'flex';
       document.getElementById('detail-view-btns').style.display = 'none';
       document.getElementById('detail-edit-btns').style.display = 'flex';
       document.getElementById('detail-members-edit').style.pointerEvents = '';
@@ -2241,6 +2262,8 @@
           btn.classList.toggle('selected', current.indexOf(btn.dataset.member) !== -1);
         });
       }
+      document.getElementById('detail-meta').style.display = '';
+      document.getElementById('detail-edit-fields').style.display = 'none';
       document.getElementById('detail-view-btns').style.display = 'flex';
       document.getElementById('detail-edit-btns').style.display = 'none';
       document.getElementById('detail-members-edit').style.pointerEvents = 'none';
@@ -2263,16 +2286,30 @@
     }
 
     async function saveEventAssignment() {
+      const ev = state.events.find(function(e) { return e.id === _detailEventId; });
       const btns = document.querySelectorAll('#detail-members-edit .ev-member-btn.selected');
-      const member_ids = [...btns].map(b => b.dataset.member);
+      const member_ids = [...btns].map(function(b) { return b.dataset.member; });
       if (!member_ids.length) { showToast('⚠️ Selecciona al menos un miembro'); return; }
+      const date = document.getElementById('detail-edit-date').value;
+      const startTime = document.getElementById('detail-edit-start').value;
+      const endTime = document.getElementById('detail-edit-end').value;
+      const allDay = ev && ev.all_day;
+      const updates = {
+        title: document.getElementById('detail-edit-title').value || undefined,
+        location: document.getElementById('detail-edit-location').value || undefined,
+        start_dt: allDay ? date : (date && startTime ? date + 'T' + startTime : undefined),
+        end_dt: allDay ? date : (date && endTime ? date + 'T' + endTime : undefined),
+      };
       try {
-        await api('PUT', `/api/events/${_detailEventId}/assignments`, { member_ids });
+        await Promise.all([
+          api('PATCH', '/api/events/' + _detailEventId, updates),
+          api('PUT', '/api/events/' + _detailEventId + '/assignments', { member_ids })
+        ]);
         closeModal('modal-event-detail');
         await loadEvents();
         render();
-        showToast('✅ Asignación guardada');
-      } catch { showToast('⚠️ Error al guardar'); }
+        showToast('✅ Evento guardado');
+      } catch(e) { showToast('⚠️ Error al guardar'); }
     }
 
     // ── Settings ──────────────────────────────────────────────────────────────────

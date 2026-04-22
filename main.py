@@ -209,6 +209,21 @@ class EventAssign(BaseModel):
     member_ids: list[str]
 
 
+class EventUpdate(BaseModel):
+    title: str | None = None
+    start_dt: str | None = None
+    end_dt: str | None = None
+    location: str | None = None
+    description: str | None = None
+
+
+@app.patch("/api/events/{event_id}")
+async def api_update_event(event_id: str, body: EventUpdate):
+    updates = {k: v for k, v in body.model_dump().items() if v is not None}
+    database.update_event(event_id, updates)
+    return {"ok": True}
+
+
 @app.put("/api/events/{event_id}/assignments")
 async def api_assign_event(event_id: str, body: EventAssign):
     database.assign_event_members(event_id, body.member_ids)

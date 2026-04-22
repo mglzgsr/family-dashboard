@@ -181,6 +181,17 @@ def assign_event_members(event_id: str, member_ids: list[str]):
             )
 
 
+def update_event(event_id: str, updates: dict):
+    allowed = {"title", "start_dt", "end_dt", "all_day", "location", "description"}
+    filtered = {k: v for k, v in updates.items() if k in allowed}
+    if not filtered:
+        return
+    set_clause = ", ".join(f"{k} = :{k}" for k in filtered)
+    filtered["id"] = event_id
+    with get_conn() as conn:
+        conn.execute(f"UPDATE events SET {set_clause} WHERE id = :id", filtered)
+
+
 def delete_event(event_id: str):
     with get_conn() as conn:
         conn.execute("DELETE FROM events WHERE id = ? AND source = 'manual'", (event_id,))
