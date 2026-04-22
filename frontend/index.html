@@ -941,6 +941,15 @@
       display: flex;
     }
 
+    #detail-ev-days-row {
+      display: none;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    #detail-ev-days-row:not(.hidden) {
+      display: flex;
+    }
+
     .modal input,
     .modal select,
     .modal textarea {
@@ -1334,6 +1343,23 @@
             <input id="detail-edit-end" type="time" style="flex:1">
           </div>
           <input id="detail-edit-location" type="text" placeholder="Lugar">
+          <select id="detail-edit-recurrence" onchange="toggleDetailRecurrence()">
+            <option value="none">Sin repetición</option>
+            <option value="daily">Cada día</option>
+            <option value="weekly">Cada semana</option>
+            <option value="monthly">Cada mes</option>
+            <option value="semestral">Cada 6 meses</option>
+            <option value="annual">Cada año</option>
+          </select>
+          <div id="detail-ev-days-row" class="hidden">
+            <button type="button" class="day-pill detail-day-pill" data-day="1" data-sel="0">L</button>
+            <button type="button" class="day-pill detail-day-pill" data-day="2" data-sel="0">M</button>
+            <button type="button" class="day-pill detail-day-pill" data-day="3" data-sel="0">X</button>
+            <button type="button" class="day-pill detail-day-pill" data-day="4" data-sel="0">J</button>
+            <button type="button" class="day-pill detail-day-pill" data-day="5" data-sel="0">V</button>
+            <button type="button" class="day-pill detail-day-pill" data-day="6" data-sel="0">S</button>
+            <button type="button" class="day-pill detail-day-pill" data-day="7" data-sel="0">D</button>
+          </div>
         </div>
         <div>
           <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:8px">Participantes</label>
@@ -2022,9 +2048,28 @@
       if (val === 'weekly') { row.classList.remove('hidden'); }
       else { row.classList.add('hidden'); }
     }
+    function toggleDetailRecurrence() {
+      var val = document.getElementById('detail-edit-recurrence').value;
+      var row = document.getElementById('detail-ev-days-row');
+      if (val === 'weekly') { row.classList.remove('hidden'); } else { row.classList.add('hidden'); }
+    }
+    function _resetDetailDayPills() {
+      document.querySelectorAll('.detail-day-pill').forEach(function(btn) {
+        btn.dataset.sel = '0'; btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = '';
+      });
+    }
     document.querySelectorAll('.day-pill').forEach(btn => {
       btn.addEventListener('click', () => {
         const on = btn.dataset.sel === '1';
+        btn.dataset.sel = on ? '0' : '1';
+        btn.style.background = on ? '' : '#7C3AED';
+        btn.style.color = on ? '' : '#fff';
+        btn.style.borderColor = on ? '' : '#7C3AED';
+      });
+    });
+    document.querySelectorAll('.detail-day-pill').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var on = btn.dataset.sel === '1';
         btn.dataset.sel = on ? '0' : '1';
         btn.style.background = on ? '' : '#7C3AED';
         btn.style.color = on ? '' : '#fff';
@@ -2266,6 +2311,9 @@
         var timeRow = document.getElementById('detail-edit-fields').querySelector('div');
         timeRow.style.display = ev.all_day ? 'none' : 'flex';
       }
+      document.getElementById('detail-edit-recurrence').value = 'none';
+      document.getElementById('detail-ev-days-row').classList.add('hidden');
+      _resetDetailDayPills();
       document.getElementById('detail-meta').style.display = 'none';
       document.getElementById('detail-edit-fields').style.display = 'flex';
       document.getElementById('detail-view-btns').style.display = 'none';
@@ -2281,6 +2329,9 @@
           btn.classList.toggle('selected', current.indexOf(btn.dataset.member) !== -1);
         });
       }
+      document.getElementById('detail-edit-recurrence').value = 'none';
+      document.getElementById('detail-ev-days-row').classList.add('hidden');
+      _resetDetailDayPills();
       document.getElementById('detail-meta').style.display = '';
       document.getElementById('detail-edit-fields').style.display = 'none';
       document.getElementById('detail-view-btns').style.display = 'flex';
@@ -2355,17 +2406,35 @@
       const startTime = document.getElementById('detail-edit-start').value;
       const endTime = document.getElementById('detail-edit-end').value;
       const allDay = ev && ev.all_day;
-      const updates = {
-        title: document.getElementById('detail-edit-title').value || undefined,
-        location: document.getElementById('detail-edit-location').value || undefined,
-        start_dt: allDay ? date : (date && startTime ? date + 'T' + startTime : undefined),
-        end_dt: allDay ? date : (date && endTime ? date + 'T' + endTime : undefined),
-      };
+      const title = document.getElementById('detail-edit-title').value || (ev && ev.title) || '';
+      const location = document.getElementById('detail-edit-location').value || undefined;
+      const recurrence = document.getElementById('detail-edit-recurrence').value;
+      const start_dt = allDay ? date : (date && startTime ? date + 'T' + startTime : undefined);
+      const end_dt = allDay ? date : (date && endTime ? date + 'T' + endTime : undefined);
       try {
-        await Promise.all([
-          api('PATCH', '/api/events/' + _detailEventId, updates),
-          api('PUT', '/api/events/' + _detailEventId + '/assignments', { member_ids })
-        ]);
+        if (recurrence !== 'none' && date) {
+          const detailDays = recurrence === 'weekly'
+            ? Array.from(document.querySelectorAll('.detail-day-pill')).filter(function(b) { return b.dataset.sel === '1'; }).map(function(b) { return parseInt(b.dataset.day); })
+            : [];
+          const dates = generateRecurringDates(date, recurrence, detailDays);
+          const sid = (ev && ev.series_id) || ('series-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+          await api('PATCH', '/api/events/' + _detailEventId, { title, location, start_dt, end_dt, series_id: sid });
+          await api('PUT', '/api/events/' + _detailEventId + '/assignments', { member_ids });
+          for (var i = 0; i < dates.length; i++) {
+            if (dates[i] === date) continue;
+            var s = allDay ? dates[i] : (startTime ? dates[i] + 'T' + startTime : dates[i]);
+            var e2 = allDay ? dates[i] : (endTime ? dates[i] + 'T' + endTime : s);
+            var res = await api('POST', '/api/events', { title, start_dt: s, end_dt: e2, all_day: allDay, member_id: ev ? ev.member_id : member_ids[0], location: location || null, series_id: sid });
+            if (member_ids.length > 1 && res && res.event) {
+              await api('PUT', '/api/events/' + res.event.id + '/assignments', { member_ids });
+            }
+          }
+        } else {
+          await Promise.all([
+            api('PATCH', '/api/events/' + _detailEventId, { title, location, start_dt, end_dt }),
+            api('PUT', '/api/events/' + _detailEventId + '/assignments', { member_ids })
+          ]);
+        }
         closeModal('modal-event-detail');
         await loadEvents();
         render();

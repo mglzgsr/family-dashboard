@@ -226,6 +226,7 @@ class EventUpdate(BaseModel):
     end_dt: str | None = None
     location: str | None = None
     description: str | None = None
+    series_id: str | None = None
 
 
 @app.patch("/api/events/{event_id}")

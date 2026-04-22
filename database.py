@@ -191,7 +191,7 @@ def assign_event_members(event_id: str, member_ids: list[str]):
 
 
 def update_event(event_id: str, updates: dict):
-    allowed = {"title", "start_dt", "end_dt", "all_day", "location", "description"}
+    allowed = {"title", "start_dt", "end_dt", "all_day", "location", "description", "series_id"}
     filtered = {k: v for k, v in updates.items() if k in allowed}
     if not filtered:
         return
