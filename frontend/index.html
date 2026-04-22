@@ -456,6 +456,15 @@
       font-family: 'DM Mono', monospace;
       font-size: 10px;
     }
+    .event-chip .evt-loc {
+      display: block;
+      font-size: 10px;
+      opacity: .7;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
 
     .add-day-btn {
       width: 100%;
@@ -2211,7 +2220,7 @@
       document.getElementById('theme-btn').textContent = t === 'dark' ? '🌙' : '☀️';
       localStorage.setItem('theme', t);
       document.querySelectorAll('gmp-place-autocomplete').forEach(function(el) {
-        el.setAttribute('colorScheme', t);
+        el.setAttribute('colorScheme', t === 'dark' ? 'DARK' : 'LIGHT');
       });
     }
     function toggleTheme() {
@@ -2538,7 +2547,8 @@
         if (!original) return;
         var pac = new google.maps.places.PlaceAutocompleteElement();
         pac.setAttribute('placeholder', original.getAttribute('placeholder') || 'Lugar');
-        pac.setAttribute('colorScheme', document.documentElement.getAttribute('data-theme') || 'light');
+        var theme = document.documentElement.getAttribute('data-theme') || 'light';
+        pac.setAttribute('colorScheme', theme === 'dark' ? 'DARK' : 'LIGHT');
         original.parentNode.insertBefore(pac, original);
         original.style.display = 'none';
         _pacElements[id] = pac;
