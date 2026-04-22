@@ -2094,7 +2094,7 @@
         btn.dataset.sel = '0'; btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = '';
       });
     }
-    document.querySelectorAll('.day-pill').forEach(btn => {
+    document.querySelectorAll('.day-pill:not(.detail-day-pill)').forEach(btn => {
       btn.addEventListener('click', () => {
         const on = btn.dataset.sel === '1';
         btn.dataset.sel = on ? '0' : '1';
