@@ -1346,7 +1346,7 @@
           <button class="btn btn-primary" style="flex:1" onclick="enterDetailEditMode()">Editar</button>
         </div>
         <div id="detail-edit-btns" style="display:none;gap:10px;flex:1">
-          <button class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
+          <button id="detail-delete-btn" class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
           <button class="btn btn-ghost" style="flex:1" onclick="exitDetailEditMode()">Cancelar</button>
           <button class="btn btn-primary" style="flex:1" onclick="saveEventAssignment()">Guardar</button>
         </div>
@@ -2286,15 +2286,25 @@
       if (btn) btn.classList.toggle('selected');
     }
 
-    async function deleteEventFromModal() {
-      if (!confirm('¿Eliminar este evento de la vista?')) return;
-      try {
-        await api('DELETE', `/api/events/${_detailEventId}`);
+    function deleteEventFromModal() {
+      var btn = document.getElementById('detail-delete-btn');
+      if (btn.dataset.confirming !== 'true') {
+        btn.dataset.confirming = 'true';
+        btn.textContent = '¿Seguro?';
+        setTimeout(function() {
+          btn.dataset.confirming = 'false';
+          btn.textContent = 'Eliminar';
+        }, 3000);
+        return;
+      }
+      btn.dataset.confirming = 'false';
+      btn.textContent = 'Eliminar';
+      api('DELETE', '/api/events/' + _detailEventId).then(function() {
         closeModal('modal-event-detail');
-        state.events = state.events.filter(e => e.id !== _detailEventId);
+        state.events = state.events.filter(function(e) { return e.id !== _detailEventId; });
         render();
         showToast('🗑 Evento eliminado');
-      } catch { showToast('⚠️ Error al eliminar'); }
+      }).catch(function() { showToast('⚠️ Error al eliminar'); });
     }
 
     async function saveEventAssignment() {
