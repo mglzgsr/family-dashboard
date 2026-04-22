@@ -96,6 +96,10 @@ def init_db():
             conn.execute("ALTER TABLE google_calendars ADD COLUMN account_id TEXT")
         except Exception:
             pass
+        try:
+            conn.execute("ALTER TABLE events ADD COLUMN series_id TEXT")
+        except Exception:
+            pass
 
         legacy_token = conn.execute(
             "SELECT value FROM settings WHERE key = 'google_token'"
@@ -164,11 +168,16 @@ def create_manual_event(e: dict):
     with get_conn() as conn:
         conn.execute(
             """
-            INSERT INTO events (id, title, start_dt, end_dt, all_day, member_id, source, description, location)
-            VALUES (:id, :title, :start_dt, :end_dt, :all_day, :member_id, 'manual', :description, :location)
+            INSERT INTO events (id, title, start_dt, end_dt, all_day, member_id, source, description, location, series_id)
+            VALUES (:id, :title, :start_dt, :end_dt, :all_day, :member_id, 'manual', :description, :location, :series_id)
             """,
-            e,
+            {**e, "series_id": e.get("series_id")},
         )
+
+
+def delete_series(series_id: str):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM events WHERE series_id = ?", (series_id,))
 
 
 def assign_event_members(event_id: str, member_ids: list[str]):

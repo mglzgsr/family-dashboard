@@ -184,6 +184,7 @@ class EventCreate(BaseModel):
     member_id: str
     description: str | None = None
     location: str | None = None
+    series_id: str | None = None
 
 
 @app.post("/api/events", status_code=201)
@@ -197,9 +198,16 @@ async def api_create_event(body: EventCreate):
         "member_id": body.member_id,
         "description": body.description,
         "location": body.location,
+        "series_id": body.series_id,
     }
     database.create_manual_event(event)
     return {"event": event}
+
+
+@app.delete("/api/series/{series_id}")
+async def api_delete_series(series_id: str):
+    database.delete_series(series_id)
+    return {"ok": True}
 
 
 @app.delete("/api/events/{event_id}")

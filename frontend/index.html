@@ -1350,6 +1350,11 @@
           <button class="btn btn-ghost" style="flex:1" onclick="exitDetailEditMode()">Cancelar</button>
           <button class="btn btn-primary" style="flex:1" onclick="saveEventAssignment()">Guardar</button>
         </div>
+        <div id="detail-series-btns" style="display:none;gap:6px;flex:1;align-items:center">
+          <button class="btn btn-ghost" style="flex:1;font-size:12px" onclick="confirmDeleteSingle()">Solo este</button>
+          <button class="btn btn-ghost" style="flex:1;font-size:12px;color:#ef4444" onclick="confirmDeleteSeries()">Toda la serie</button>
+          <button class="btn btn-ghost" style="flex:0" onclick="cancelDeleteSeries()">✕</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2068,12 +2073,13 @@
 
       const dates = generateRecurringDates(date, recurrence, days);
       if (!dates.length) { showToast('⚠️ Selecciona al menos un día'); return; }
+      const series_id = dates.length > 1 ? 'series-' + Date.now() + '-' + Math.random().toString(36).slice(2) : null;
 
       try {
         for (const d of dates) {
           const start_dt = allDay ? d : (start ? `${d}T${start}:00` : d);
           const end_dt = allDay ? d : (end ? `${d}T${end}:00` : start_dt);
-          const res = await api('POST', '/api/events', { title, start_dt, end_dt, all_day: allDay, member_id: member, location: loc || null, description: desc || null });
+          const res = await api('POST', '/api/events', { title, start_dt, end_dt, all_day: allDay, member_id: member, location: loc || null, description: desc || null, series_id });
           if (selectedMembers.length > 1 && res && res.event) {
             await api('PUT', `/api/events/${res.event.id}/assignments`, { member_ids: selectedMembers });
           }
@@ -2244,6 +2250,7 @@
       document.getElementById('detail-edit-fields').style.display = 'none';
       document.getElementById('detail-view-btns').style.display = 'flex';
       document.getElementById('detail-edit-btns').style.display = 'none';
+      document.getElementById('detail-series-btns').style.display = 'none';
       document.getElementById('detail-members-edit').style.pointerEvents = 'none';
       document.getElementById('modal-event-detail').classList.remove('hidden');
     }
@@ -2278,6 +2285,7 @@
       document.getElementById('detail-edit-fields').style.display = 'none';
       document.getElementById('detail-view-btns').style.display = 'flex';
       document.getElementById('detail-edit-btns').style.display = 'none';
+      document.getElementById('detail-series-btns').style.display = 'none';
       document.getElementById('detail-members-edit').style.pointerEvents = 'none';
     }
 
@@ -2287,6 +2295,12 @@
     }
 
     function deleteEventFromModal() {
+      var ev = state.events.find(function(e) { return e.id === _detailEventId; });
+      if (ev && ev.series_id) {
+        document.getElementById('detail-edit-btns').style.display = 'none';
+        document.getElementById('detail-series-btns').style.display = 'flex';
+        return;
+      }
       var btn = document.getElementById('detail-delete-btn');
       if (btn.dataset.confirming !== 'true') {
         btn.dataset.confirming = 'true';
@@ -2299,12 +2313,37 @@
       }
       btn.dataset.confirming = 'false';
       btn.textContent = 'Eliminar';
-      api('DELETE', '/api/events/' + _detailEventId).then(function() {
+      _doDeleteEvent(_detailEventId);
+    }
+
+    function _doDeleteEvent(eventId) {
+      api('DELETE', '/api/events/' + eventId).then(function() {
         closeModal('modal-event-detail');
-        state.events = state.events.filter(function(e) { return e.id !== _detailEventId; });
+        state.events = state.events.filter(function(e) { return e.id !== eventId; });
         render();
         showToast('🗑 Evento eliminado');
       }).catch(function() { showToast('⚠️ Error al eliminar'); });
+    }
+
+    function confirmDeleteSingle() {
+      _doDeleteEvent(_detailEventId);
+    }
+
+    function confirmDeleteSeries() {
+      var ev = state.events.find(function(e) { return e.id === _detailEventId; });
+      if (!ev || !ev.series_id) return;
+      var sid = ev.series_id;
+      api('DELETE', '/api/series/' + sid).then(function() {
+        closeModal('modal-event-detail');
+        state.events = state.events.filter(function(e) { return e.series_id !== sid; });
+        render();
+        showToast('🗑 Serie eliminada');
+      }).catch(function() { showToast('⚠️ Error al eliminar'); });
+    }
+
+    function cancelDeleteSeries() {
+      document.getElementById('detail-series-btns').style.display = 'none';
+      document.getElementById('detail-edit-btns').style.display = 'flex';
     }
 
     async function saveEventAssignment() {
