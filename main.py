@@ -210,6 +210,13 @@ async def api_delete_series(series_id: str):
     return {"ok": True}
 
 
+@app.post("/api/admin/reset")
+async def api_admin_reset(background_tasks: BackgroundTasks):
+    database.reset_data()
+    background_tasks.add_task(calendar_sync.sync_all)
+    return {"ok": True}
+
+
 @app.delete("/api/events/{event_id}")
 async def api_delete_event(event_id: str):
     database.delete_event(event_id)

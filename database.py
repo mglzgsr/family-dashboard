@@ -175,6 +175,17 @@ def create_manual_event(e: dict):
         )
 
 
+def reset_data():
+    with get_conn() as conn:
+        conn.executescript("""
+            DELETE FROM events;
+            DELETE FROM tasks;
+            DELETE FROM event_assignments;
+            DELETE FROM hidden_events;
+            DELETE FROM settings WHERE key = 'last_sync';
+        """)
+
+
 def delete_series(series_id: str):
     with get_conn() as conn:
         conn.execute("DELETE FROM events WHERE series_id = ?", (series_id,))

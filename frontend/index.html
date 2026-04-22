@@ -1452,6 +1452,12 @@
           </div>
         </div>
 
+        <div style="padding:12px 20px;border-top:1px solid var(--border)">
+          <button id="reset-db-btn" class="btn btn-ghost btn-sm" style="color:#ef4444;width:100%" onclick="resetDatabase()">
+            Borrar todos los datos y empezar de cero
+          </button>
+        </div>
+
         <div
           style="padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
           <span id="settings-last-sync" style="font-size:12px;color:var(--text-muted)"></span>
@@ -1603,6 +1609,31 @@
         const data = await api('GET', url);
         state.tasks = data.tasks || [];
       } catch { state.tasks = []; }
+    }
+
+    function resetDatabase() {
+      var btn = document.getElementById('reset-db-btn');
+      if (btn.dataset.confirming !== 'true') {
+        btn.dataset.confirming = 'true';
+        btn.textContent = '¿Seguro? Pulsa de nuevo para borrar todo';
+        btn.style.fontWeight = '700';
+        setTimeout(function() {
+          btn.dataset.confirming = 'false';
+          btn.textContent = 'Borrar todos los datos y empezar de cero';
+          btn.style.fontWeight = '';
+        }, 4000);
+        return;
+      }
+      btn.dataset.confirming = 'false';
+      btn.textContent = 'Borrando...';
+      api('POST', '/api/admin/reset').then(function() {
+        closeModal('modal-settings');
+        state.events = [];
+        state.tasks = [];
+        render();
+        showToast('🗑 Datos borrados. Sincronizando...');
+        triggerSync();
+      }).catch(function() { showToast('⚠️ Error al borrar'); btn.textContent = 'Borrar todos los datos y empezar de cero'; });
     }
 
     async function triggerSync() {
