@@ -76,7 +76,10 @@ app.mount("/static", StaticFiles(directory="frontend"), name="static")
 @app.get("/", response_class=HTMLResponse)
 async def root():
     with open("frontend/index.html", "r", encoding="utf-8") as f:
-        return HTMLResponse(f.read())
+        html = f.read()
+    maps_key = os.getenv("GOOGLE_MAPS_API_KEY", "")
+    html = html.replace("__GOOGLE_MAPS_API_KEY__", maps_key)
+    return HTMLResponse(html)
 
 
 # ── Google OAuth ──────────────────────────────────────────────────────────────

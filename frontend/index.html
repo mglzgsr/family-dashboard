@@ -2499,6 +2499,23 @@
       el._t = setTimeout(() => { el.classList.add('fade'); setTimeout(() => el.classList.add('hidden'), 300); }, 2500);
     }
   </script>
+  <script>
+    function initPlacesAutocomplete() {
+      var fields = ['ev-location', 'detail-edit-location'];
+      fields.forEach(function(id) {
+        var input = document.getElementById(id);
+        if (!input) return;
+        var ac = new google.maps.places.Autocomplete(input, { fields: ['formatted_address', 'name'] });
+        ac.addListener('place_changed', function() {
+          var place = ac.getPlace();
+          input.value = place.name && place.formatted_address
+            ? place.name + ', ' + place.formatted_address
+            : place.formatted_address || place.name || input.value;
+        });
+      });
+    }
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=__GOOGLE_MAPS_API_KEY__&libraries=places&callback=initPlacesAutocomplete" async defer></script>
 </body>
 
 </html>
