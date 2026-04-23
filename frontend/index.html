@@ -1772,7 +1772,7 @@
             ? `<span class="evt-members">${members.map(id => { const m = state.members.find(x => x.id === id); return m ? m.emoji : ''; }).join('')}</span>`
             : '';
           const time = ev.all_day ? '' : `<span class="evt-time">${ev.start_dt.slice(11, 16)}</span>`;
-          const loc = ev.location ? `<span class="evt-loc">${escHtml(ev.location)}</span>` : '';
+          const loc = `<span class="evt-loc">${ev.location ? escHtml(ev.location) : ''}</span>`;
           return `<div class="event-chip ${colorClass}" style="cursor:pointer" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}${ev.location ? ' · ' + escHtml(ev.location) : ''}">${time}${escHtml(ev.title)}${dots}${loc}</div>`;
         }).join('');
 
