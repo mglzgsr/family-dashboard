@@ -217,6 +217,38 @@ async def api_admin_reset(background_tasks: BackgroundTasks):
     return {"ok": True}
 
 
+class EventBatchItem(BaseModel):
+    title: str
+    start_dt: str
+    end_dt: str | None = None
+    all_day: bool = False
+    member_id: str
+    description: str | None = None
+    location: str | None = None
+    series_id: str | None = None
+    member_ids: list[str] | None = None
+
+
+@app.post("/api/events/batch", status_code=201)
+async def api_create_events_batch(body: list[EventBatchItem]):
+    for item in body:
+        event = {
+            "id": f"manual-{uuid.uuid4()}",
+            "title": item.title,
+            "start_dt": item.start_dt,
+            "end_dt": item.end_dt or item.start_dt,
+            "all_day": int(item.all_day),
+            "member_id": item.member_id,
+            "description": item.description,
+            "location": item.location,
+            "series_id": item.series_id,
+        }
+        database.create_manual_event(event)
+        if item.member_ids:
+            database.assign_event_members(event["id"], item.member_ids)
+    return {"ok": True}
+
+
 @app.delete("/api/events/{event_id}")
 async def api_delete_event(event_id: str, reimport: bool = False):
     database.delete_event(event_id, hide=not reimport)
