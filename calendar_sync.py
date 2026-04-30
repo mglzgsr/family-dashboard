@@ -211,11 +211,30 @@ def sync_google_member(creds, member_id: str, cal_id: str, week_start: str, week
     return count
 
 
-def sync_google(week_start: str, week_end: str) -> dict:
+def _build_valid_google_creds() -> list:
+    """Refresh tokens once per sync cycle. Returns [(account, creds), ...] for valid accounts only."""
     accounts = database.get_google_accounts()
-
     if not accounts:
-        # Fallback to legacy .env-based token
+        return []
+    valid = []
+    for account in accounts:
+        creds = build_google_credentials(account["id"])
+        if not creds:
+            continue
+        try:
+            creds = refresh_google_token(creds, account["id"])
+            valid.append((account, creds))
+        except Exception as exc:
+            if "invalid_grant" in str(exc):
+                logger.warning("Google token revoked for %s — reconnect in settings", account.get("email", account["id"]))
+            else:
+                logger.error("Token refresh failed for account %s: %s", account["id"], exc)
+    return valid
+
+
+def sync_google(week_start: str, week_end: str, valid_creds: list | None = None) -> dict:
+    if valid_creds is None:
+        # Legacy .env-based token fallback (no accounts in DB)
         legacy_token = database.get_setting("google_token")
         if not legacy_token:
             return {"status": "not_connected"}
@@ -242,18 +261,9 @@ def sync_google(week_start: str, week_end: str) -> dict:
         return {"status": "ok", "events_synced": total}
 
     total = 0
-    for account in accounts:
-        creds = build_google_credentials(account["id"])
-        if not creds:
-            continue
-        try:
-            creds = refresh_google_token(creds, account["id"])
-        except Exception as exc:
-            logger.error("Token refresh failed for account %s: %s", account["id"], exc)
-            continue
+    for account, creds in valid_creds:
         for cal in database.get_google_calendars(account["id"]):
             total += sync_google_member(creds, cal["member_id"], cal["calendar_id"], week_start, week_end)
-
     return {"status": "ok", "events_synced": total}
 
 
@@ -435,10 +445,14 @@ async def sync_all(weeks_ahead: int = 3) -> dict:
     now = datetime.now()
     results = []
 
+    # Refresh tokens once — skip invalid accounts for the whole cycle
+    accounts = database.get_google_accounts()
+    valid_google_creds = _build_valid_google_creds() if accounts else None
+
     for offset in range(weeks_ahead):
         ref = now + timedelta(weeks=offset)
         week_start, week_end = week_range(ref)
-        g = sync_google(week_start, week_end)
+        g = sync_google(week_start, week_end, valid_google_creds)
         a = sync_apple(week_start, week_end)
         i = sync_ics(week_start, week_end)
         results.append({"week": week_start[:10], "google": g, "apple": a, "ics": i})

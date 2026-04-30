@@ -16,3 +16,16 @@ jobs:
 
       - name: Restart service
         run: sudo systemctl restart family-dashboard
+
+      - name: Clean up runner artifacts
+        if: always()
+        run: |
+          # Old versioned runner directories left after auto-updates
+          find /opt/family-planner/actions-runner -maxdepth 1 -name 'externals.*' -type d -exec rm -rf {} + 2>/dev/null || true
+          find /opt/family-planner/actions-runner -maxdepth 1 -name 'bin.*' -type d -exec rm -rf {} + 2>/dev/null || true
+          # Installation tarballs
+          find /opt/family-planner/actions-runner -maxdepth 1 -name '*.tar.gz' -delete 2>/dev/null || true
+          # Build workspace
+          rm -rf /opt/family-planner/actions-runner/_work/* 2>/dev/null || true
+          # Runner diagnostic logs older than 7 days
+          find /opt/family-planner/actions-runner/_diag -name '*.log' -mtime +7 -delete 2>/dev/null || true
