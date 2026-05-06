@@ -368,6 +368,13 @@ def sync_ics(week_start: str, week_end: str) -> dict:
     except ImportError:
         return {"status": "icalendar_not_installed"}
 
+    try:
+        import recurring_ical_events
+        _has_recur = True
+    except ImportError:
+        _has_recur = False
+        logger.warning("recurring-ical-events not installed — recurring ICS events won't expand")
+
     feeds = database.get_ics_calendars()
     if not feeds:
         return {"status": "no_calendars"}
@@ -390,7 +397,17 @@ def sync_ics(week_start: str, week_end: str) -> dict:
 
         database.delete_synced_events_for_member(member_id, "ics", week_start, week_end)
 
-        for component in cal.walk():
+        # Expand recurring events if library is available, otherwise fall back to raw walk
+        if _has_recur:
+            try:
+                components = recurring_ical_events.of(cal).between(start_dt, end_dt)
+            except Exception as exc:
+                logger.warning("ICS expand error for %s: %s", member_id, exc)
+                components = [c for c in cal.walk() if c.name == "VEVENT"]
+        else:
+            components = [c for c in cal.walk() if c.name == "VEVENT"]
+
+        for component in components:
             if component.name != "VEVENT":
                 continue
             try:
@@ -406,7 +423,8 @@ def sync_ics(week_start: str, week_end: str) -> dict:
                     ev_start = dtstart.replace(tzinfo=None) if dtstart.tzinfo else dtstart
                     ev_end = dtend.replace(tzinfo=None) if dtend.tzinfo else dtend
 
-                if ev_end < start_dt or ev_start >= end_dt:
+                # Without expansion, filter manually
+                if not _has_recur and (ev_end < start_dt or ev_start >= end_dt):
                     continue
 
                 uid = str(component.get("UID") or _new_id())
@@ -416,8 +434,12 @@ def sync_ics(week_start: str, week_end: str) -> dict:
                 start_str = ev_start.isoformat()[:10] if all_day else ev_start.isoformat()[:19]
                 end_str = ev_end.isoformat()[:10] if all_day else ev_end.isoformat()[:19]
 
+                # For recurring events, each occurrence needs a unique id/external_id
+                # We use uid + start date so the same occurrence is stable across syncs
+                occurrence_key = f"{uid}_{start_str[:10]}"
+
                 database.upsert_event({
-                    "id": f"ics-{uid}",
+                    "id": f"ics-{occurrence_key}",
                     "title": summary,
                     "start_dt": start_str,
                     "end_dt": end_str,
@@ -426,7 +448,7 @@ def sync_ics(week_start: str, week_end: str) -> dict:
                     "source": "ics",
                     "description": description,
                     "location": location,
-                    "external_id": uid,
+                    "external_id": occurrence_key,
                 })
                 total += 1
             except Exception as exc:
