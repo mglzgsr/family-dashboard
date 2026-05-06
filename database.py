@@ -104,6 +104,10 @@ def init_db():
             conn.execute("ALTER TABLE events ADD COLUMN manually_edited INTEGER NOT NULL DEFAULT 0")
         except Exception:
             pass
+        try:
+            conn.execute("ALTER TABLE tasks ADD COLUMN series_id TEXT")
+        except Exception:
+            pass
 
         legacy_token = conn.execute(
             "SELECT value FROM settings WHERE key = 'google_token'"
@@ -256,15 +260,15 @@ def create_task(t: dict):
     with get_conn() as conn:
         conn.execute(
             """
-            INSERT INTO tasks (id, title, member_id, completed, due_date, priority, notes)
-            VALUES (:id, :title, :member_id, 0, :due_date, :priority, :notes)
+            INSERT INTO tasks (id, title, member_id, completed, due_date, priority, notes, series_id)
+            VALUES (:id, :title, :member_id, 0, :due_date, :priority, :notes, :series_id)
             """,
-            t,
+            {**t, "series_id": t.get("series_id")},
         )
 
 
 def update_task(task_id: str, updates: dict):
-    allowed = {"title", "member_id", "completed", "due_date", "priority", "notes", "completed_at"}
+    allowed = {"title", "member_id", "completed", "due_date", "priority", "notes", "completed_at", "series_id"}
     filtered = {k: v for k, v in updates.items() if k in allowed}
     if not filtered:
         return
@@ -277,6 +281,11 @@ def update_task(task_id: str, updates: dict):
 def delete_task(task_id: str):
     with get_conn() as conn:
         conn.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+
+
+def delete_task_series(series_id: str):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM tasks WHERE series_id = ?", (series_id,))
 
 
 # ── Google Accounts ───────────────────────────────────────────────────────────

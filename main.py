@@ -295,6 +295,7 @@ class TaskCreate(BaseModel):
     priority: str = "medium"
     due_date: str | None = None
     notes: str | None = None
+    series_id: str | None = None
 
 
 @app.post("/api/tasks", status_code=201)
@@ -306,9 +307,42 @@ async def api_create_task(body: TaskCreate):
         "priority": body.priority,
         "due_date": body.due_date,
         "notes": body.notes,
+        "series_id": body.series_id,
     }
     database.create_task(task)
     return {"task": {**task, "completed": 0, "created_at": datetime.now().isoformat()}}
+
+
+class TaskBatchItem(BaseModel):
+    title: str
+    member_id: str = "family"
+    priority: str = "medium"
+    due_date: str | None = None
+    notes: str | None = None
+    series_id: str | None = None
+
+
+class TaskBatch(BaseModel):
+    tasks: list[TaskBatchItem]
+
+
+@app.post("/api/tasks/batch", status_code=201)
+async def api_create_tasks_batch(body: TaskBatch):
+    created = []
+    now = datetime.now().isoformat()
+    for t in body.tasks:
+        task = {
+            "id": str(uuid.uuid4()),
+            "title": t.title,
+            "member_id": t.member_id,
+            "priority": t.priority,
+            "due_date": t.due_date,
+            "notes": t.notes,
+            "series_id": t.series_id,
+        }
+        database.create_task(task)
+        created.append({**task, "completed": 0, "created_at": now})
+    return {"tasks": created}
 
 
 class TaskUpdate(BaseModel):
@@ -318,6 +352,7 @@ class TaskUpdate(BaseModel):
     due_date: str | None = None
     priority: str | None = None
     notes: str | None = None
+    series_id: str | None = None
 
 
 @app.patch("/api/tasks/{task_id}")
@@ -327,6 +362,12 @@ async def api_update_task(task_id: str, body: TaskUpdate):
         updates["completed"] = int(updates["completed"])
         updates["completed_at"] = datetime.now().isoformat() if updates["completed"] else None
     database.update_task(task_id, updates)
+    return {"ok": True}
+
+
+@app.delete("/api/tasks/series/{series_id}")
+async def api_delete_task_series(series_id: str):
+    database.delete_task_series(series_id)
     return {"ok": True}
 
 
