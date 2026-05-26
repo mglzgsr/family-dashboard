@@ -194,6 +194,7 @@ def sync_google_member(creds, member_id: str, cal_id: str, week_start: str, week
         # Normalise to ISO without timezone suffix for consistent DB storage
         start = start[:19] if len(start) > 10 else start
         end = end[:19] if len(end) > 10 else end
+        recurring_id = item.get("recurringEventId")
         database.upsert_event(
             {
                 "id": f"gcal-{item['id']}",
@@ -206,6 +207,7 @@ def sync_google_member(creds, member_id: str, cal_id: str, week_start: str, week
                 "description": item.get("description"),
                 "location": item.get("location"),
                 "external_id": item["id"],
+                "series_id": f"gcal-series-{recurring_id}" if recurring_id else None,
             }
         )
         count += 1

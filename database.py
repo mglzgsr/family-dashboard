@@ -158,18 +158,19 @@ def upsert_event(e: dict):
     with get_conn() as conn:
         conn.execute(
             """
-            INSERT INTO events (id, title, start_dt, end_dt, all_day, member_id, source, description, location, external_id)
-            VALUES (:id, :title, :start_dt, :end_dt, :all_day, :member_id, :source, :description, :location, :external_id)
+            INSERT INTO events (id, title, start_dt, end_dt, all_day, member_id, source, description, location, external_id, series_id)
+            VALUES (:id, :title, :start_dt, :end_dt, :all_day, :member_id, :source, :description, :location, :external_id, :series_id)
             ON CONFLICT(id) DO UPDATE SET
                 title       = excluded.title,
                 start_dt    = excluded.start_dt,
                 end_dt      = excluded.end_dt,
                 all_day     = excluded.all_day,
                 description = excluded.description,
-                location    = excluded.location
+                location    = excluded.location,
+                series_id   = excluded.series_id
             WHERE events.manually_edited = 0
             """,
-            e,
+            {**e, "series_id": e.get("series_id")},
         )
 
 
