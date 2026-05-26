@@ -333,6 +333,12 @@ def get_google_calendars(account_id: str | None = None) -> list[dict]:
 
 def create_google_calendar(c: dict):
     with get_conn() as conn:
+        existing = conn.execute(
+            "SELECT id FROM google_calendars WHERE calendar_id = ? AND account_id = ?",
+            (c["calendar_id"], c.get("account_id")),
+        ).fetchone()
+        if existing:
+            return
         conn.execute(
             "INSERT INTO google_calendars (id, calendar_id, name, member_id, account_id) VALUES (:id, :calendar_id, :name, :member_id, :account_id)",
             c,
