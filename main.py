@@ -12,6 +12,8 @@ from pydantic import BaseModel
 
 load_dotenv()
 
+VERSION = "1.1.0"
+
 import database
 import calendar_sync
 
@@ -135,6 +137,7 @@ async def api_status():
         "google_connected": bool(google_accounts),
         "apple_configured": apple_configured,
         "last_sync": database.get_setting("last_sync"),
+        "version": VERSION,
         "members": [
             {"id": "ale",      "name": "Ale",        "color": "#7C3AED", "emoji": "👩", "adult": True, "image": _img("ale"), "category": False},
             {"id": "miguel",   "name": "Miguel",     "color": "#2563EB", "emoji": "👨", "adult": True, "image": _img("miguel"), "category": False},

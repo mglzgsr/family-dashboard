@@ -1471,7 +1471,10 @@
 
         <div
           style="padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
-          <span id="settings-last-sync" style="font-size:12px;color:var(--text-muted)"></span>
+          <span style="font-size:12px;color:var(--text-muted)">
+            <span id="settings-version"></span>
+            <span id="settings-last-sync"></span>
+          </span>
           <div style="display:flex;gap:8px;align-items:center">
             <button class="btn btn-ghost btn-sm" id="theme-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
             <button class="btn btn-ghost btn-sm" onclick="triggerSync()" title="Sincronizar calendarios"
@@ -2596,6 +2599,7 @@
       const appleStatus = document.getElementById('settings-apple-status');
       appleStatus.textContent = s.apple_configured ? 'Configurado' : 'No configurado';
       appleStatus.className = 'settings-status' + (s.apple_configured ? ' connected' : '');
+      document.getElementById('settings-version').textContent = s.version ? 'v' + s.version + ' · ' : '';
       document.getElementById('settings-last-sync').textContent = s.last_sync
         ? 'Última sync: ' + fmtRelative(s.last_sync)
         : 'Sin sincronizar aún';
