@@ -2409,6 +2409,8 @@
       meta.push(`<span>📅 ${dateStr}</span>`);
       if (ev.location) meta.push(`<span>📍 <a href="https://maps.google.com/?q=${encodeURIComponent(ev.location)}" target="_blank" style="color:inherit;text-decoration:underline">${escHtml(ev.location)}</a></span>`);
       if (ev.description) meta.push(`<span>📝 ${escHtml(ev.description)}</span>`);
+      const sourceLabel = { google: 'Google Calendar', apple: 'iCloud', ics: 'ICS' }[ev.source];
+      if (sourceLabel) meta.push(`<span style="font-size:11px;color:var(--text-muted);margin-top:2px">↗ ${sourceLabel}</span>`);
       document.getElementById('detail-meta').innerHTML = meta.join('');
 
       const current = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
