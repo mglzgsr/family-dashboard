@@ -2450,6 +2450,22 @@
       document.getElementById('detail-edit-recurrence').value = 'none';
       document.getElementById('detail-ev-days-row').classList.add('hidden');
       _resetDetailDayPills();
+      var recurrenceRow = document.getElementById('detail-edit-recurrence');
+      var recurrenceNote = document.getElementById('detail-recurrence-note');
+      if (ev && ev.series_id && ev.source !== 'manual') {
+        recurrenceRow.style.display = 'none';
+        if (!recurrenceNote) {
+          recurrenceNote = document.createElement('p');
+          recurrenceNote.id = 'detail-recurrence-note';
+          recurrenceNote.style.cssText = 'font-size:12px;color:var(--text-muted);margin:0';
+          recurrenceNote.textContent = '🔁 Recurrencia gestionada en ' + ({ google: 'Google Calendar', apple: 'iCloud', ics: 'ICS' }[ev.source] || 'el calendario original');
+          recurrenceRow.parentNode.insertBefore(recurrenceNote, recurrenceRow.nextSibling);
+        }
+        recurrenceNote.style.display = '';
+      } else {
+        recurrenceRow.style.display = '';
+        if (recurrenceNote) recurrenceNote.style.display = 'none';
+      }
       document.getElementById('detail-meta').style.display = 'none';
       document.getElementById('detail-edit-fields').style.display = 'flex';
       document.getElementById('detail-view-btns').style.display = 'none';
