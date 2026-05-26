@@ -341,9 +341,11 @@ def sync_apple(week_start: str, week_end: str) -> dict:
                     location = str(vevent.location.value) if hasattr(vevent, "location") else None
                     description = str(vevent.description.value) if hasattr(vevent, "description") else None
 
+                    has_rrule = hasattr(vevent, "rrule")
+                    occurrence_key = f"{uid}_{start_str[:10]}" if has_rrule else uid
                     database.upsert_event(
                         {
-                            "id": f"apple-{uid}",
+                            "id": f"apple-{occurrence_key}",
                             "title": summary,
                             "start_dt": start_str,
                             "end_dt": end_str,
@@ -352,7 +354,8 @@ def sync_apple(week_start: str, week_end: str) -> dict:
                             "source": "apple",
                             "description": description,
                             "location": location,
-                            "external_id": uid,
+                            "external_id": occurrence_key,
+                            "series_id": f"apple-series-{uid}" if has_rrule else None,
                         }
                     )
                     total += 1
@@ -441,6 +444,7 @@ def sync_ics(week_start: str, week_end: str) -> dict:
                 # We use uid + start date so the same occurrence is stable across syncs
                 occurrence_key = f"{uid}_{start_str[:10]}"
 
+                has_rrule = bool(component.get("RRULE"))
                 database.upsert_event({
                     "id": f"ics-{occurrence_key}",
                     "title": summary,
@@ -452,6 +456,7 @@ def sync_ics(week_start: str, week_end: str) -> dict:
                     "description": description,
                     "location": location,
                     "external_id": occurrence_key,
+                    "series_id": f"ics-series-{uid}" if has_rrule else None,
                 })
                 total += 1
             except Exception as exc:
