@@ -1377,9 +1377,10 @@
           <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-event-detail')">Cerrar</button>
           <button class="btn btn-primary" style="flex:1" onclick="enterDetailEditMode()">Editar</button>
         </div>
-        <div id="detail-edit-btns" style="display:none;gap:10px;flex:1">
+        <div id="detail-edit-btns" style="display:none;gap:10px;flex:1;flex-wrap:wrap">
           <button id="detail-delete-btn" class="btn btn-ghost" style="color:#ef4444;flex:0" onclick="deleteEventFromModal()">Eliminar</button>
           <button class="btn btn-ghost" style="flex:1" onclick="exitDetailEditMode()">Cancelar</button>
+          <button class="btn btn-ghost" style="flex:1;display:none" id="detail-save-series-btn" onclick="saveSeriesAssignment()">Toda la serie</button>
           <button class="btn btn-primary" style="flex:1" id="detail-save-btn" onclick="saveEventAssignment()">Guardar</button>
         </div>
         <div id="detail-series-btns" style="display:none;gap:6px;flex:1;align-items:center">
@@ -2452,7 +2453,10 @@
       _resetDetailDayPills();
       var recurrenceRow = document.getElementById('detail-edit-recurrence');
       var recurrenceNote = document.getElementById('detail-recurrence-note');
-      if (ev && ev.series_id && ev.source !== 'manual') {
+      var seriesBtn = document.getElementById('detail-save-series-btn');
+      var saveBtn2 = document.getElementById('detail-save-btn');
+      var isSyncedSeries = ev && ev.series_id && ev.source !== 'manual';
+      if (isSyncedSeries) {
         recurrenceRow.style.display = 'none';
         if (!recurrenceNote) {
           recurrenceNote = document.createElement('p');
@@ -2462,9 +2466,13 @@
           recurrenceRow.parentNode.insertBefore(recurrenceNote, recurrenceRow.nextSibling);
         }
         recurrenceNote.style.display = '';
+        seriesBtn.style.display = '';
+        saveBtn2.textContent = 'Solo este';
       } else {
         recurrenceRow.style.display = '';
         if (recurrenceNote) recurrenceNote.style.display = 'none';
+        seriesBtn.style.display = 'none';
+        saveBtn2.textContent = 'Guardar';
       }
       document.getElementById('detail-meta').style.display = 'none';
       document.getElementById('detail-edit-fields').style.display = 'flex';
@@ -2491,6 +2499,13 @@
       document.getElementById('detail-series-btns').style.display = 'none';
       document.getElementById('detail-sync-delete-btns').style.display = 'none';
       document.getElementById('detail-members-edit').style.pointerEvents = 'none';
+      var seriesBtn = document.getElementById('detail-save-series-btn');
+      seriesBtn.style.display = 'none';
+      seriesBtn.disabled = false;
+      seriesBtn.textContent = 'Toda la serie';
+      var saveBtn = document.getElementById('detail-save-btn');
+      saveBtn.textContent = 'Guardar';
+      saveBtn.disabled = false;
     }
 
     function toggleDetailMemberBtn(memberId) {
@@ -2607,7 +2622,41 @@
       } catch(e) {
         showToast('⚠️ Error al guardar');
         saveBtn.disabled = false;
-        saveBtn.textContent = 'Guardar';
+        saveBtn.textContent = 'Solo este';
+      }
+    }
+
+    async function saveSeriesAssignment() {
+      const ev = state.events.find(function(e) { return e.id === _detailEventId; });
+      if (!ev || !ev.series_id) return;
+      const seriesBtn = document.getElementById('detail-save-series-btn');
+      const saveBtn = document.getElementById('detail-save-btn');
+      seriesBtn.disabled = true;
+      seriesBtn.textContent = 'Guardando...';
+      saveBtn.disabled = true;
+      const btns = document.querySelectorAll('#detail-members-edit .ev-member-btn.selected');
+      const member_ids = [...btns].map(function(b) { return b.dataset.member; });
+      if (!member_ids.length) {
+        showToast('⚠️ Selecciona al menos un miembro');
+        seriesBtn.disabled = false; seriesBtn.textContent = 'Toda la serie';
+        saveBtn.disabled = false;
+        return;
+      }
+      const title = document.getElementById('detail-edit-title').value || ev.title || '';
+      const location = document.getElementById('detail-edit-location').value || undefined;
+      try {
+        await Promise.all([
+          api('PATCH', '/api/series/' + ev.series_id, { title, location }),
+          api('PUT', '/api/series/' + ev.series_id + '/assignments', { member_ids })
+        ]);
+        closeModal('modal-event-detail');
+        await loadEvents();
+        render();
+        showToast('✅ Serie actualizada');
+      } catch(e) {
+        showToast('⚠️ Error al guardar la serie');
+        seriesBtn.disabled = false; seriesBtn.textContent = 'Toda la serie';
+        saveBtn.disabled = false;
       }
     }
 

@@ -213,6 +213,18 @@ async def api_delete_series(series_id: str):
     return {"ok": True}
 
 
+@app.patch("/api/series/{series_id}")
+async def api_patch_series(series_id: str, body: EventUpdate):
+    database.update_series(series_id, body.model_dump(exclude_none=True))
+    return {"ok": True}
+
+
+@app.put("/api/series/{series_id}/assignments")
+async def api_series_assignments(series_id: str, body: EventAssign):
+    database.assign_series_members(series_id, body.member_ids)
+    return {"ok": True}
+
+
 @app.post("/api/admin/reset")
 async def api_admin_reset(background_tasks: BackgroundTasks):
     database.reset_data()

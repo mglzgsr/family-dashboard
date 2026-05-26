@@ -201,6 +201,40 @@ def delete_series(series_id: str):
         conn.execute("DELETE FROM events WHERE series_id = ?", (series_id,))
 
 
+def get_series_event_ids(series_id: str) -> list[str]:
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT id FROM events WHERE series_id = ?", (series_id,)
+        ).fetchall()
+        return [r["id"] for r in rows]
+
+
+def assign_series_members(series_id: str, member_ids: list[str]):
+    ids = get_series_event_ids(series_id)
+    with get_conn() as conn:
+        for event_id in ids:
+            conn.execute("DELETE FROM event_assignments WHERE event_id = ?", (event_id,))
+            for mid in member_ids:
+                conn.execute(
+                    "INSERT INTO event_assignments (event_id, member_id) VALUES (?, ?)",
+                    (event_id, mid),
+                )
+
+
+def update_series(series_id: str, updates: dict):
+    allowed = {"title", "location", "description"}
+    filtered = {k: v for k, v in updates.items() if k in allowed}
+    if not filtered:
+        return
+    set_clause = ", ".join(f"{k} = :{k}" for k in filtered)
+    filtered["series_id"] = series_id
+    with get_conn() as conn:
+        conn.execute(
+            f"UPDATE events SET {set_clause} WHERE series_id = :series_id",
+            filtered,
+        )
+
+
 def assign_event_members(event_id: str, member_ids: list[str]):
     with get_conn() as conn:
         conn.execute("DELETE FROM event_assignments WHERE event_id = ?", (event_id,))
