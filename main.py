@@ -438,8 +438,13 @@ async def api_save_google_calendar(body: GoogleCalendarSave, background_tasks: B
 
 
 @app.delete("/api/google/saved-calendars/{cal_id}")
-async def api_delete_saved_google_calendar(cal_id: str):
+async def api_delete_saved_google_calendar(cal_id: str, background_tasks: BackgroundTasks):
+    cals = database.get_google_calendars()
+    cal = next((c for c in cals if c["id"] == cal_id), None)
     database.delete_google_calendar(cal_id)
+    if cal:
+        database.delete_google_events_for_member(cal["member_id"])
+        background_tasks.add_task(calendar_sync.sync_all)
     return {"ok": True}
 
 

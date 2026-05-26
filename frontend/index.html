@@ -2659,7 +2659,7 @@
           <select id="gcal-member-${account.id}">${memberOpts}</select>
           <div class="field-group">
             <button class="btn btn-ghost" onclick="hideGcalPicker('${account.id}')">Cancelar</button>
-            <button class="btn btn-primary" onclick="submitAddGcal('${account.id}')">Añadir</button>
+            <button class="btn btn-primary" id="gcal-submit-${account.id}" onclick="submitAddGcal('${account.id}')">Añadir</button>
           </div>
         </div>
       </div>`;
@@ -2689,14 +2689,21 @@
       const calendar_id = picker.value;
       const name = (picker.options[picker.selectedIndex] ? picker.options[picker.selectedIndex].text : null) || calendar_id;
       const member_id = document.getElementById(`gcal-member-${accountId}`).value;
-      if (!calendar_id || calendar_id === 'Cargando...' || calendar_id === 'Error al cargar') return;
+      if (!calendar_id || calendar_id === 'Cargando...' || calendar_id.startsWith('Error')) return;
+      const btn = document.getElementById(`gcal-submit-${accountId}`);
+      btn.disabled = true;
+      btn.textContent = 'Añadiendo…';
       try {
         await api('POST', '/api/google/saved-calendars', { calendar_id, name, member_id, account_id: accountId });
         hideGcalPicker(accountId);
         await fetchSavedGoogleCals();
         renderGoogleAccounts();
         showToast('✅ Calendario añadido');
-      } catch (e) { showToast('⚠️ Error: ' + (e.message || 'no se pudo añadir')); }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = 'Añadir';
+        showToast('⚠️ Error: ' + (e.message || 'no se pudo añadir'));
+      }
     }
 
     async function deleteGoogleCal(id) {

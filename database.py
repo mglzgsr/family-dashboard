@@ -343,6 +343,14 @@ def delete_google_calendar(cal_id: str):
         conn.execute("DELETE FROM google_calendars WHERE id = ?", (cal_id,))
 
 
+def delete_google_events_for_member(member_id: str):
+    with get_conn() as conn:
+        conn.execute(
+            "DELETE FROM events WHERE member_id = ? AND source = 'google'",
+            (member_id,),
+        )
+
+
 # ── ICS Calendars ─────────────────────────────────────────────────────────────
 
 def get_ics_calendars() -> list[dict]:
