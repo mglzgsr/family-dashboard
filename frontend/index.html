@@ -1570,7 +1570,11 @@
       const opts = { method, headers: { 'Content-Type': 'application/json' } };
       if (body) opts.body = JSON.stringify(body);
       const r = await fetch(path, opts);
-      if (!r.ok) throw new Error(`${method} ${path} → ${r.status}`);
+      if (!r.ok) {
+        let detail = '';
+        try { detail = (await r.json()).detail || ''; } catch {}
+        throw new Error(detail || `${method} ${path} → ${r.status}`);
+      }
       return r.json();
     }
 
@@ -2673,7 +2677,7 @@
         const opts = data.calendars.filter(c => !existing.has(c.id));
         picker.innerHTML = opts.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
         if (!opts.length) picker.innerHTML = '<option>No hay más calendarios disponibles</option>';
-      } catch { picker.innerHTML = '<option>Error al cargar</option>'; }
+      } catch (e) { picker.innerHTML = `<option>Error: ${escHtml(e.message || 'no se pudo cargar')}</option>`; }
     }
 
     function hideGcalPicker(accountId) {
