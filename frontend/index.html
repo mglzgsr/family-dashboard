@@ -2648,6 +2648,7 @@
              onclick="return confirm('¿Desconectar ${escHtml(account.email)}?')">Desconectar</a>
         </div>
         ${calRows}
+        ${!accountCals.length ? `<p class="settings-note" style="margin:6px 0 2px;color:#f59e0b">⚠ Sin calendarios — los eventos no se sincronizarán hasta que añadas al menos uno.</p>` : ''}
         <button class="btn btn-ghost btn-sm" style="margin-top:6px;align-self:flex-start" onclick="showGcalPicker('${account.id}')">+ Añadir calendario</button>
         <div id="gcal-add-${account.id}" class="settings-add-ics hidden">
           <select id="gcal-picker-${account.id}"><option>Cargando...</option></select>
