@@ -77,13 +77,15 @@ def build_google_credentials(account_id: str):
         return None
 
     info = json.loads(account["token_json"])
+    # Don't pass scopes here: google-auth includes them in the refresh request,
+    # which causes invalid_scope when Google originally granted extra scopes
+    # (openid, email, profile). The refresh token already encodes the real scopes.
     creds = Credentials(
         token=info.get("token"),
         refresh_token=info.get("refresh_token"),
         token_uri="https://oauth2.googleapis.com/token",
         client_id=os.getenv("GOOGLE_CLIENT_ID"),
         client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-        scopes=GOOGLE_SCOPES,
     )
     return creds
 
@@ -246,7 +248,6 @@ def sync_google(week_start: str, week_end: str, valid_creds: list | None = None)
             token_uri="https://oauth2.googleapis.com/token",
             client_id=os.getenv("GOOGLE_CLIENT_ID"),
             client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-            scopes=GOOGLE_SCOPES,
         )
         try:
             creds = refresh_google_token(creds)
