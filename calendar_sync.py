@@ -195,6 +195,7 @@ def sync_google_member(creds, member_id: str, cal_id: str, week_start: str, week
         start = start[:19] if len(start) > 10 else start
         end = end[:19] if len(end) > 10 else end
         recurring_id = item.get("recurringEventId")
+        event_member = "birthday" if item.get("eventType") == "birthday" else member_id
         database.upsert_event(
             {
                 "id": f"gcal-{item['id']}",
@@ -202,7 +203,7 @@ def sync_google_member(creds, member_id: str, cal_id: str, week_start: str, week
                 "start_dt": start,
                 "end_dt": end,
                 "all_day": int(all_day),
-                "member_id": member_id,
+                "member_id": event_member,
                 "source": "google",
                 "description": item.get("description"),
                 "location": item.get("location"),
