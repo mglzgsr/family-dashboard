@@ -1795,7 +1795,13 @@
         const dateStr = fmtDate(day);
         const isToday = day.getTime() === today.getTime();
         const isPast = day < today;
-        const dayEvents = state.events.filter(e => e.start_dt.slice(0, 10) === dateStr);
+        const dayEvents = state.events.filter(e => {
+          const s = e.start_dt.slice(0, 10);
+          if (!e.all_day) return s === dateStr;
+          const endDay = e.end_dt ? e.end_dt.slice(0, 10) : s;
+          if (endDay > s) return s <= dateStr && dateStr < endDay;
+          return s === dateStr;
+        });
 
         const birthdays = dayEvents.filter(ev => ev.member_id === 'birthday');
         const regularEvents = dayEvents.filter(ev => ev.member_id !== 'birthday');
@@ -1851,7 +1857,13 @@
     function renderDayView() {
       const d = state.currentDay;
       const dayStr = fmtDate(d);
-      const dayEvents = state.events.filter(e => (e.start_dt || '').startsWith(dayStr));
+      const dayEvents = state.events.filter(e => {
+        const s = (e.start_dt || '').slice(0, 10);
+        if (!e.all_day) return s === dayStr;
+        const endDay = e.end_dt ? e.end_dt.slice(0, 10) : s;
+        if (endDay > s) return s <= dayStr && dayStr < endDay;
+        return s === dayStr;
+      });
       const dayName = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
 
       const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];

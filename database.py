@@ -126,12 +126,21 @@ def init_db():
 
 def get_events(week_start: str, week_end: str, member_id: str | None = None) -> list[dict]:
     with get_conn() as conn:
+        # Return events that overlap with [week_start, week_end):
+        # event starts before week_end AND (starts within week OR ends after week_start)
+        overlap = """
+            DATE(e.start_dt) < DATE(?)
+            AND (
+                DATE(e.start_dt) >= DATE(?)
+                OR (e.end_dt IS NOT NULL AND DATE(e.end_dt) > DATE(?))
+            )
+        """
         if member_id:
-            rows = conn.execute("""
+            rows = conn.execute(f"""
                 SELECT e.*, GROUP_CONCAT(ea.member_id) as assigned_members
                 FROM events e
                 LEFT JOIN event_assignments ea ON e.id = ea.event_id
-                WHERE DATE(e.start_dt) >= DATE(?) AND DATE(e.start_dt) < DATE(?)
+                WHERE {overlap}
                 AND e.id NOT IN (SELECT event_id FROM hidden_events)
                 AND (
                     EXISTS (SELECT 1 FROM event_assignments WHERE event_id = e.id AND member_id = ?)
@@ -139,17 +148,17 @@ def get_events(week_start: str, week_end: str, member_id: str | None = None) -> 
                 )
                 GROUP BY e.id
                 ORDER BY e.start_dt
-            """, (week_start, week_end, member_id, member_id)).fetchall()
+            """, (week_end, week_start, week_start, member_id, member_id)).fetchall()
         else:
-            rows = conn.execute("""
+            rows = conn.execute(f"""
                 SELECT e.*, GROUP_CONCAT(ea.member_id) as assigned_members
                 FROM events e
                 LEFT JOIN event_assignments ea ON e.id = ea.event_id
-                WHERE DATE(e.start_dt) >= DATE(?) AND DATE(e.start_dt) < DATE(?)
+                WHERE {overlap}
                 AND e.id NOT IN (SELECT event_id FROM hidden_events)
                 GROUP BY e.id
                 ORDER BY e.start_dt
-            """, (week_start, week_end)).fetchall()
+            """, (week_end, week_start, week_start)).fetchall()
         return [dict(r) for r in rows]
 
 
