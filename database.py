@@ -131,7 +131,7 @@ def get_events(week_start: str, week_end: str, member_id: str | None = None) -> 
                 SELECT e.*, GROUP_CONCAT(ea.member_id) as assigned_members
                 FROM events e
                 LEFT JOIN event_assignments ea ON e.id = ea.event_id
-                WHERE e.start_dt >= ? AND e.start_dt < ?
+                WHERE DATE(e.start_dt) >= DATE(?) AND DATE(e.start_dt) < DATE(?)
                 AND e.id NOT IN (SELECT event_id FROM hidden_events)
                 AND (
                     EXISTS (SELECT 1 FROM event_assignments WHERE event_id = e.id AND member_id = ?)
@@ -145,7 +145,7 @@ def get_events(week_start: str, week_end: str, member_id: str | None = None) -> 
                 SELECT e.*, GROUP_CONCAT(ea.member_id) as assigned_members
                 FROM events e
                 LEFT JOIN event_assignments ea ON e.id = ea.event_id
-                WHERE e.start_dt >= ? AND e.start_dt < ?
+                WHERE DATE(e.start_dt) >= DATE(?) AND DATE(e.start_dt) < DATE(?)
                 AND e.id NOT IN (SELECT event_id FROM hidden_events)
                 GROUP BY e.id
                 ORDER BY e.start_dt

@@ -32,8 +32,6 @@ def _img(name: str) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     database.init_db()
-    # Seed with demo tasks if DB is fresh
-    _seed_demo_tasks()
     # Background periodic sync every 30 min
     sync_task = asyncio.create_task(_periodic_sync())
     yield
@@ -42,22 +40,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Family Dashboard", lifespan=lifespan)
 
-
-def _seed_demo_tasks():
-    existing = database.get_tasks()
-    if existing:
-        return
-    demo = [
-        {"id": str(uuid.uuid4()), "title": "Comprar material escolar de Noa",
-         "member_id": "ale", "due_date": None, "priority": "medium", "notes": None},
-        {"id": str(uuid.uuid4()), "title": "Revisar seguro del coche",
-         "member_id": "miguel", "due_date": None, "priority": "high", "notes": None},
-        {"id": str(uuid.uuid4()), "title": "Recoger a Oli del colegio",
-         "member_id": "family", "due_date": (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d"),
-         "priority": "high", "notes": None},
-    ]
-    for t in demo:
-        database.create_task(t)
 
 
 async def _periodic_sync():

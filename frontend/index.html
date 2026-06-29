@@ -525,6 +525,30 @@
       border-left-color: #F59E0B !important;
     }
 
+    .birthday-banner {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-bottom: 3px;
+      cursor: pointer;
+      background: #2d1f06;
+      color: #FBBF24;
+      border: 1px solid #78350f;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .birthday-banner:hover { opacity: 0.85; }
+    [data-theme="light"] .birthday-banner {
+      background: #FEF3C7;
+      color: #92400E;
+      border-color: #F59E0B;
+    }
+
     /* ── Task panel ─────────────────────────────────────────────────────────── */
     .tasks-card {
       background: var(--surface);
@@ -1773,7 +1797,14 @@
         const isPast = day < today;
         const dayEvents = state.events.filter(e => e.start_dt.slice(0, 10) === dateStr);
 
-        const chips = dayEvents.map(ev => {
+        const birthdays = dayEvents.filter(ev => ev.member_id === 'birthday');
+        const regularEvents = dayEvents.filter(ev => ev.member_id !== 'birthday');
+
+        const birthdayBanners = birthdays.map(ev =>
+          `<div class="birthday-banner" onclick="openEventDetail('${ev.id}')" title="${escHtml(ev.title)}">🎂 ${escHtml(ev.title)}</div>`
+        ).join('');
+
+        const chips = regularEvents.map(ev => {
           const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
           const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
           const dots = members.length > 1
@@ -1791,6 +1822,7 @@
           <div class="day-num">${day.getDate()}</div>
         </div>
         <div class="day-events">
+          ${birthdayBanners}
           ${chips || ''}
           <button class="add-day-btn" onclick="openAddEventOn('${dateStr}')">+</button>
         </div>
@@ -1835,8 +1867,15 @@
     </button>`;
       }).join('');
 
-      const evList = dayEvents.length
-        ? dayEvents.sort((a, b) => a.start_dt.localeCompare(b.start_dt)).map(ev => {
+      const dayBirthdays = dayEvents.filter(ev => ev.member_id === 'birthday');
+      const dayRegular = dayEvents.filter(ev => ev.member_id !== 'birthday');
+
+      const birthdayBannersDay = dayBirthdays.map(ev =>
+        `<div class="birthday-banner" style="font-size:13px;padding:6px 10px;margin-bottom:6px;" onclick="openEventDetail('${ev.id}')">🎂 ${escHtml(ev.title)}</div>`
+      ).join('');
+
+      const evList = (birthdayBannersDay || dayRegular.length)
+        ? birthdayBannersDay + dayRegular.sort((a, b) => a.start_dt.localeCompare(b.start_dt)).map(ev => {
           const members = ev.assigned_members ? ev.assigned_members.split(',') : [ev.member_id];
           const colorClass = members.length > 1 ? 'c-family' : `c-${members[0]}`;
           const time = ev.all_day ? 'Todo el día' : ev.start_dt.slice(11, 16);
