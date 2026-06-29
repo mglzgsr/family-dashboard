@@ -165,6 +165,7 @@ def upsert_event(e: dict):
                 start_dt    = excluded.start_dt,
                 end_dt      = excluded.end_dt,
                 all_day     = excluded.all_day,
+                member_id   = excluded.member_id,
                 description = excluded.description,
                 location    = excluded.location,
                 series_id   = excluded.series_id
