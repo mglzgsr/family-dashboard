@@ -1345,6 +1345,10 @@
           <button type="button" class="day-pill" data-day="6">S</button>
           <button type="button" class="day-pill" data-day="7">D</button>
         </div>
+        <div id="ev-until-row" class="hidden" style="display:none;align-items:center;gap:8px;">
+          <label style="font-size:13px;color:var(--text-muted);white-space:nowrap;">Repetir hasta</label>
+          <input id="ev-until" type="date" style="flex:1;">
+        </div>
         <input id="ev-location" type="text" placeholder="Lugar (opcional)">
         <textarea id="ev-description" placeholder="Notas (opcional)" rows="2"></textarea>
       </div>
@@ -2142,6 +2146,8 @@
       document.getElementById('ev-end').disabled = false;
       document.getElementById('ev-recurrence').value = 'none';
       document.getElementById('ev-days-row').classList.add('hidden');
+      document.getElementById('ev-until').value = '';
+      document.getElementById('ev-until-row').style.display = 'none';
       document.querySelectorAll('.day-pill').forEach(btn => { btn.dataset.sel = '0'; btn.style.background = ''; btn.style.color = ''; btn.style.borderColor = ''; });
       document.getElementById('modal-event').classList.remove('hidden');
       setTimeout(() => document.getElementById('ev-title').focus(), 50);
@@ -2155,8 +2161,9 @@
     function toggleRecurrence() {
       const val = document.getElementById('ev-recurrence').value;
       const row = document.getElementById('ev-days-row');
-      if (val === 'weekly') { row.classList.remove('hidden'); }
-      else { row.classList.add('hidden'); }
+      const untilRow = document.getElementById('ev-until-row');
+      if (val === 'weekly') { row.classList.remove('hidden'); } else { row.classList.add('hidden'); }
+      if (val !== 'none') { untilRow.style.display = 'flex'; } else { untilRow.style.display = 'none'; }
     }
     function toggleDetailRecurrence() {
       var val = document.getElementById('detail-edit-recurrence').value;
@@ -2186,10 +2193,11 @@
         btn.style.borderColor = on ? '' : '#7C3AED';
       });
     });
-    function generateRecurringDates(startDate, recurrence, days) {
+    function generateRecurringDates(startDate, recurrence, days, until) {
       const ref = new Date(startDate + 'T00:00:00');
-      const limit = new Date(ref);
-      limit.setFullYear(limit.getFullYear() + 2);
+      const defaultLimit = new Date(ref);
+      defaultLimit.setFullYear(defaultLimit.getFullYear() + 2);
+      const limit = until ? new Date(until + 'T00:00:00') : defaultLimit;
       const dates = [];
       const push = d => dates.push(fmtDate(d));
       if (recurrence === 'none') { push(ref); return dates; }
@@ -2197,7 +2205,7 @@
         for (let d = new Date(ref); d <= limit; d.setDate(d.getDate() + 1)) push(new Date(d));
       } else if (recurrence === 'weekly') {
         for (let d = new Date(ref); d <= limit; d.setDate(d.getDate() + 1)) {
-          const dow = d.getDay() === 0 ? 7 : d.getDay(); // 1=Mon…7=Sun
+          const dow = d.getDay() === 0 ? 7 : d.getDay();
           if (days.includes(dow)) push(new Date(d));
         }
       } else if (recurrence === 'monthly') {
@@ -2205,7 +2213,7 @@
       } else if (recurrence === 'semestral') {
         for (let d = new Date(ref); d <= limit; d.setMonth(d.getMonth() + 6)) push(new Date(d));
       } else if (recurrence === 'annual') {
-        limit.setFullYear(limit.getFullYear() + 3);
+        if (!until) limit.setFullYear(limit.getFullYear() + 3);
         for (let d = new Date(ref); d <= limit; d.setFullYear(d.getFullYear() + 1)) push(new Date(d));
       }
       return dates;
@@ -2225,8 +2233,9 @@
       const days = recurrence === 'weekly'
         ? Array.from(document.querySelectorAll('.day-pill')).filter(b => b.dataset.sel === '1').map(btn => parseInt(btn.dataset.day))
         : [];
+      const until = recurrence !== 'none' ? (document.getElementById('ev-until').value || null) : null;
 
-      const dates = generateRecurringDates(date, recurrence, days);
+      const dates = generateRecurringDates(date, recurrence, days, until);
       if (!dates.length) { showToast('⚠️ Selecciona al menos un día'); return; }
       const series_id = dates.length > 1 ? 'series-' + Date.now() + '-' + Math.random().toString(36).slice(2) : null;
 
