@@ -124,7 +124,7 @@ async def api_status():
             {"id": "ale",      "name": "Ale",        "color": "#7C3AED", "emoji": "👩", "adult": True, "image": _img("ale"), "category": False},
             {"id": "miguel",   "name": "Miguel",     "color": "#2563EB", "emoji": "👨", "adult": True, "image": _img("miguel"), "category": False},
             {"id": "noa",      "name": "Noa",        "color": "#059669", "emoji": "🧒", "adult": False, "image": _img("noa"), "category": False},
-            {"id": "oli",      "name": "Oli",        "color": "#0D9488", "emoji": "👧", "adult": False, "image": _img("oli"), "category": False},
+            {"id": "oli",      "name": "Oli",        "color": "#DC2626", "emoji": "👧", "adult": False, "image": _img("oli"), "category": False},
             {"id": "family",   "name": "Familia",    "color": "#DB2777", "emoji": "🏠", "adult": False, "image": _img("family"), "category": False},
             {"id": "birthday", "name": "Cumpleaños", "color": "#B45309", "emoji": "🎂", "adult": False, "category": True},
         ],
