@@ -34,7 +34,7 @@ Columnas añadidas via migración en `init_db` (ALTER TABLE con try/except):
 ```python
 MEMBERS = ["ale", "miguel", "noa", "oli", "family", "birthday"]
 ```
-Colores: `ale=#7C3AED`, `miguel=#2563EB`, `noa=#059669`, `oli=#D97706`, `family=#DB2777`, `birthday=#B45309`
+Colores: `ale=#7C3AED`, `miguel=#2563EB`, `noa=#059669`, `oli=#0D9488`, `family=#DB2777`, `birthday=#B45309`
 
 ## API endpoints
 ```

@@ -38,8 +38,8 @@
       --miguel-bg: #1a2444;
       --noa: #059669;
       --noa-bg: #0f3028;
-      --oli: #D97706;
-      --oli-bg: #3d2a08;
+      --oli: #0D9488;
+      --oli-bg: #08302c;
       --family: #DB2777;
       --family-bg: #3d1230;
     }
@@ -56,7 +56,7 @@
       --ale-bg: #ede9fe;
       --miguel-bg: #dbeafe;
       --noa-bg: #d1fae5;
-      --oli-bg: #fef3c7;
+      --oli-bg: #ccfbf1;
       --family-bg: #fce7f3;
     }
 
@@ -1394,6 +1394,10 @@
             <button type="button" class="day-pill detail-day-pill" data-day="6" data-sel="0">S</button>
             <button type="button" class="day-pill detail-day-pill" data-day="7" data-sel="0">D</button>
           </div>
+          <div id="detail-until-row" style="display:none;align-items:center;gap:8px;">
+            <label style="font-size:13px;color:var(--text-muted);white-space:nowrap;">Repetir hasta</label>
+            <input id="detail-until" type="date" style="flex:1;">
+          </div>
         </div>
         <div>
           <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:8px">Participantes</label>
@@ -2168,7 +2172,9 @@
     function toggleDetailRecurrence() {
       var val = document.getElementById('detail-edit-recurrence').value;
       var row = document.getElementById('detail-ev-days-row');
+      var untilRow = document.getElementById('detail-until-row');
       if (val === 'weekly') { row.classList.remove('hidden'); } else { row.classList.add('hidden'); }
+      if (val !== 'none') { untilRow.style.display = 'flex'; } else { untilRow.style.display = 'none'; }
     }
     function _resetDetailDayPills() {
       document.querySelectorAll('.detail-day-pill').forEach(function(btn) {
@@ -2510,6 +2516,8 @@
       }
       document.getElementById('detail-edit-recurrence').value = 'none';
       document.getElementById('detail-ev-days-row').classList.add('hidden');
+      document.getElementById('detail-until').value = '';
+      document.getElementById('detail-until-row').style.display = 'none';
       _resetDetailDayPills();
       var recurrenceRow = document.getElementById('detail-edit-recurrence');
       var recurrenceNote = document.getElementById('detail-recurrence-note');
@@ -2551,6 +2559,8 @@
       }
       document.getElementById('detail-edit-recurrence').value = 'none';
       document.getElementById('detail-ev-days-row').classList.add('hidden');
+      document.getElementById('detail-until').value = '';
+      document.getElementById('detail-until-row').style.display = 'none';
       _resetDetailDayPills();
       document.getElementById('detail-meta').style.display = '';
       document.getElementById('detail-edit-fields').style.display = 'none';
@@ -2657,7 +2667,8 @@
           const detailDays = recurrence === 'weekly'
             ? Array.from(document.querySelectorAll('.detail-day-pill')).filter(function(b) { return b.dataset.sel === '1'; }).map(function(b) { return parseInt(b.dataset.day); })
             : [];
-          const dates = generateRecurringDates(date, recurrence, detailDays);
+          const until = document.getElementById('detail-until').value || null;
+          const dates = generateRecurringDates(date, recurrence, detailDays, until);
           const sid = (ev && ev.series_id) || ('series-' + Date.now() + '-' + Math.random().toString(36).slice(2));
           await api('PATCH', '/api/events/' + _detailEventId, { title, location, start_dt, end_dt, series_id: sid });
           await api('PUT', '/api/events/' + _detailEventId + '/assignments', { member_ids });
