@@ -20,9 +20,14 @@ jobs:
       - name: Clean up runner artifacts
         if: always()
         run: |
-          # Old versioned runner directories left after auto-updates
-          find /opt/family-planner/actions-runner -maxdepth 1 -name 'externals.*' -type d -exec rm -rf {} + 2>/dev/null || true
-          find /opt/family-planner/actions-runner -maxdepth 1 -name 'bin.*' -type d -exec rm -rf {} + 2>/dev/null || true
+          # Old versioned runner directories left after auto-updates.
+          # bin/externals are symlinks to the active bin.<ver>/externals.<ver> dirs -
+          # exclude those from deletion or we remove the version currently in use.
+          cd /opt/family-planner/actions-runner
+          active_bin=$(basename "$(readlink -f bin)")
+          active_externals=$(basename "$(readlink -f externals)")
+          find . -maxdepth 1 -name 'bin.*' -type d ! -name "$active_bin" -exec rm -rf {} + 2>/dev/null || true
+          find . -maxdepth 1 -name 'externals.*' -type d ! -name "$active_externals" -exec rm -rf {} + 2>/dev/null || true
           # Installation tarballs
           find /opt/family-planner/actions-runner -maxdepth 1 -name '*.tar.gz' -delete 2>/dev/null || true
           # Build workspace
